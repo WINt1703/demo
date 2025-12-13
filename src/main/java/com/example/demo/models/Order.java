@@ -29,9 +29,7 @@ public class Order {
 
     private String username;
 
-    @GeneratedValue
-    @SequenceGenerator(initialValue = 100, allocationSize=1)
-    @Column(name = "get_code")
+    @Column(name = "get_code", insertable = false, updatable = false)
     private int getCode;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
