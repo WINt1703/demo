@@ -29,7 +29,7 @@ public class OrdersController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<OrderDto> getOrderById(@PathVariable long id, HttpSession session) {
+    public ResponseEntity<ResponseOrderDto> getOrderById(@PathVariable long id, HttpSession session) {
         if(session.getAttribute("user") instanceof User user) {
             var order = this.orderService.getOrderByIdAndUsername(id, user.getUsername());
 

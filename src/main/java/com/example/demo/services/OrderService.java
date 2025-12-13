@@ -52,7 +52,16 @@ public class OrderService {
                 this.orderProductRepository.save(orderProduct);
             }
 
-    public Optional<OrderDto> getOrderByIdAndUsername(long orderId, String username) {
+            return Optional.of(this.orderMapper.fromEntity(order));
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<ResponseOrderDto> getOrderByIdAndUsername(long orderId, String username) {
         var order = this.orderRepository.findByIdAndUsername(orderId, username);
 
         if (order.isPresent()) {
