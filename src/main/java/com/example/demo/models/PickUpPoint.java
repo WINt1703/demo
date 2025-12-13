@@ -14,15 +14,15 @@ public class PickUpPoint {
         return this.id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public String getTitle() {
+    public String getAddress() {
         return this.address;
     }
 
-    public void setTitle(String address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 }
