@@ -15,17 +15,20 @@ public class MainPageService {
     private final UnittypeRepository unittypeRepository;
     private final CategoryRepository categoryRepository;
     private final ManufacturerRepository manufacturerRepository;
+    private final PickUpPointRepository pickUpPointRepository;
 
     public MainPageService(ProductRepository productRepository,
                            SupplierRepository supplierRepository,
                            UnittypeRepository unittypeRepository,
                            CategoryRepository categoryRepository,
-                           ManufacturerRepository manufacturerRepository) {
+                           ManufacturerRepository manufacturerRepository,
+                           PickUpPointRepository pickUpPointRepository) {
         this.productRepository = productRepository;
         this.supplierRepository = supplierRepository;
         this.categoryRepository = categoryRepository;
         this.unittypeRepository = unittypeRepository;
         this.manufacturerRepository = manufacturerRepository;
+        this.pickUpPointRepository = pickUpPointRepository;
     }
 
     public MainPageData getMainPageData(String searchQuery, String sortCode) {
@@ -37,6 +40,6 @@ public class MainPageService {
             products = productRepository.findAll(ProductSorting.fromCode(sortCode));
         }
 
-        return new MainPageData(products, supplierRepository.findAll(), manufacturerRepository.findAll(), categoryRepository.findAll(), unittypeRepository.findAll());
+        return new MainPageData(products, supplierRepository.findAll(), manufacturerRepository.findAll(), categoryRepository.findAll(), unittypeRepository.findAll(), pickUpPointRepository.findAll());
     }
 }

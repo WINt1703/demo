@@ -30,6 +30,7 @@ public class MainPageController {
             model.addAttribute("categories", modelData.categories());
             model.addAttribute("unittypes", modelData.unitTypes());
             model.addAttribute("manufacturers", modelData.manufacturers());
+            model.addAttribute("pickuppoints", modelData.pickUpPoints());
 
             return "main";
         }

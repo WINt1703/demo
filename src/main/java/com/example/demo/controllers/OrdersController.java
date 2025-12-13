@@ -1,6 +1,7 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dtos.OrderDto;
+import com.example.demo.dtos.Order.RequestOrderDto;
+import com.example.demo.dtos.Order.ResponseOrderDto;
 import com.example.demo.models.User;
 import com.example.demo.services.OrderService;
 import jakarta.servlet.http.HttpSession;
@@ -17,8 +18,14 @@ public class OrdersController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<OrderDto> createOrder() {
-        return ResponseEntity.ok(this.orderService.createOrder());
+    public ResponseEntity<ResponseOrderDto> createOrder(@RequestBody RequestOrderDto requestOrderDto) {
+        var order = this.orderService.createOrder(requestOrderDto);
+
+        if (order.isPresent()) {
+            return ResponseEntity.ok(order.orElseThrow());
+        }
+
+        return ResponseEntity.badRequest().build();
     }
 
     @GetMapping("{id}")

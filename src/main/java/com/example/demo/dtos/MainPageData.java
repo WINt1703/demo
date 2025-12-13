@@ -9,5 +9,6 @@ public record MainPageData(
         List<Supplier> suppliers,
         List<Manufacturer> manufacturers,
         List<Category> categories,
-        List<UnitType> unitTypes)
+        List<UnitType> unitTypes,
+        List<PickUpPoint> pickUpPoints)
 {}

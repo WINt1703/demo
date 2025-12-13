@@ -458,6 +458,37 @@
         .modal-field.active {
             display: block;
         }
+
+        /* Боковая панель корзины */
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100%;
+            background: #fff;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.3);
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.3s ease;
+        }
+
+        .cart-sidebar.active {
+            right: 0;
+        }
+
+        .cart-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1000;
+            display: none;
+        }
+
+        .cart-overlay.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -543,6 +574,16 @@
                     class="delete-btn"
                     th:data-id="${product.id}">
                 Удалить
+            </button>
+            <button
+                    class="btn-action btn-edit add-to-cart-btn"
+                    type="button"
+                    th:data-id="${product.id}"
+                    th:data-title="${product.title}"
+                    th:data-cost="${product.cost}"
+                    th:data-discount="${product.discountAmount}"
+                    onclick="addToCart(this)">
+                В корзину
             </button>
         </div>
 
@@ -734,6 +775,35 @@
     </div>
 </div>
 
+<!-- БОКОВОЕ МЕНЮ КОРЗИНЫ -->
+<div id="cartSidebar" class="cart-sidebar">
+    <div class="modal-header">
+        <h2>Корзина</h2>
+        <button class="modal-close" onclick="closeCartModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="cartBody">
+        <div id="cartEmpty" class="alert alert-info">Корзина пуста</div>
+        <div id="cartItems"></div>
+        <div class="form-group" id="pickUpPointGroup" style="display: none;">
+            <label for="pickUpPointSelect">Пункт выдачи</label>
+            <select id="pickUpPointSelect" class="select" style="width: 100%;">
+                <option th:each="p : ${pickuppoints}"
+                        th:value="${p.id}"
+                        th:text="${p.address}">
+                </option>
+            </select>
+        </div>
+    </div>
+    <div class="modal-footer" style="flex-direction: column; gap: 10px;">
+        <div id="cartTotal" style="font-weight: bold; font-size: 14px; width: 100%;">Итого: 0.00 ₽</div>
+        <div style="display: flex; gap: 10px; width: 100%;">
+            <button class="btn-modal btn-modal-cancel" onclick="clearCartItems()">Очистить</button>
+            <button class="btn-modal btn-modal-save" onclick="createOrder()">Оформить заказ</button>
+        </div>
+    </div>
+</div>
+<div id="cartOverlay" class="cart-overlay" onclick="closeCartModal()"></div>
+
 <script>
     function openEditModal(button) {
         const p = button.dataset; // p.id, p.title, ...
@@ -899,6 +969,201 @@
             document.getElementById('searchForm').submit();
         });
     }
+
+    // ===================== КОРЗИНА =====================
+
+    // Локальное хранилище корзины
+    let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+    // Открыть боковое меню корзины
+    function openCartModal() {
+        document.getElementById('cartSidebar').classList.add('active');
+        document.getElementById('cartOverlay').classList.add('active');
+        renderCart();
+    }
+
+    // Закрыть боковое меню корзины
+    function closeCartModal() {
+        document.getElementById('cartSidebar').classList.remove('active');
+        document.getElementById('cartOverlay').classList.remove('active');
+    }
+
+    // Добавить товар в корзину
+    function addToCart(btn) {
+        const id = btn.getAttribute('data-id');
+        const title = btn.getAttribute('data-title');
+        const cost = parseFloat(btn.getAttribute('data-cost'));
+        const discount = parseInt(btn.getAttribute('data-discount') || '0');
+
+        // Рассчитываем цену со скидкой
+        const finalCost = discount > 15 ? cost * (100 - discount) / 100 : cost;
+
+        // Проверяем, есть ли уже такой товар в корзине
+        const existingItem = cart.find(item => item.id === id);
+        if (existingItem) {
+            existingItem.quantity++;
+        } else {
+            cart.push({
+                id: id,
+                title: title,
+                cost: cost,
+                discount: discount,
+                finalCost: finalCost,
+                quantity: 1
+            });
+        }
+
+        saveCart();
+        alert('Товар добавлен в корзину');
+    }
+
+    // Сохранить корзину в localStorage
+    function saveCart() {
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    // Отрисовка корзины
+    function renderCart() {
+        const cartItems = document.getElementById('cartItems');
+        const cartEmpty = document.getElementById('cartEmpty');
+        const cartTotal = document.getElementById('cartTotal');
+        const pickUpPointGroup = document.getElementById('pickUpPointGroup');
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = '';
+            cartEmpty.style.display = 'block';
+            pickUpPointGroup.style.display = 'none';
+            cartTotal.textContent = 'Итого: 0.00 ₽';
+            return;
+        }
+
+        cartEmpty.style.display = 'none';
+        pickUpPointGroup.style.display = 'block';
+
+        let html = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            const itemTotal = item.finalCost * item.quantity;
+            total += itemTotal;
+
+            html += `
+                <div class="cart-item">
+                    <div class="item-main">
+                        <div style="font-weight: 600; margin-bottom: 4px;">${item.title}</div>
+                        <div class="prices">
+                            ${item.discount > 15
+                                ? `<span class="old-price">${item.cost.toFixed(2)} ₽</span>
+                                   <span class="price-new">${item.finalCost.toFixed(2)} ₽</span>
+                                   <span class="discount">-${item.discount}%</span>`
+                                : `<span>${item.cost.toFixed(2)} ₽</span>`
+                            }
+                        </div>
+                    </div>
+                    <div class="item-side">
+                        <div class="qty">
+                            <button class="btn-secondary" onclick="changeQuantity(${index}, -1)">-</button>
+                            <span style="min-width: 30px; text-align: center; display: inline-block;">${item.quantity}</span>
+                            <button class="btn-secondary" onclick="changeQuantity(${index}, 1)">+</button>
+                        </div>
+                        <div style="font-weight: bold;">${itemTotal.toFixed(2)} ₽</div>
+                        <button class="btn-danger" onclick="removeFromCart(${index})">✕</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        cartItems.innerHTML = html;
+        cartTotal.textContent = `Итого: ${total.toFixed(2)} ₽`;
+    }
+
+    // Изменить количество товара в корзине
+    function changeQuantity(index, delta) {
+        cart[index].quantity += delta;
+        if (cart[index].quantity <= 0) {
+            cart.splice(index, 1);
+        }
+        saveCart();
+        renderCart();
+    }
+
+    // Удалить товар из корзины
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        saveCart();
+        renderCart();
+    }
+
+    // Очистить корзину
+    function clearCartItems() {
+        if (!confirm('Очистить корзину?')) return;
+        cart = [];
+        saveCart();
+        renderCart();
+    }
+
+    // Оформить заказ через API
+    async function createOrder() {
+        if (cart.length === 0) {
+            alert('Корзина пуста');
+            return;
+        }
+
+        const pickUpPointSelect = document.getElementById('pickUpPointSelect');
+        const pickUpPointId = pickUpPointSelect ? parseInt(pickUpPointSelect.value) : null;
+
+        if (!pickUpPointId) {
+            alert('Выберите пункт выдачи');
+            return;
+        }
+
+        // Формируем данные для заказа
+        const productIdCountCollection = cart.map(item => ({
+            productId: item.id,
+            count: item.quantity
+        }));
+
+        const today = new Date();
+        const deliveryDate = new Date(today);
+        deliveryDate.setDate(deliveryDate.getDate() + 7);
+
+        const orderData = {
+            pickUpPointId: pickUpPointId,
+            createDate: today.toISOString().split('T')[0],
+            deliveryDate: deliveryDate.toISOString().split('T')[0],
+            username: null,
+            productIdCountCollection: productIdCountCollection
+        };
+
+        try {
+            const response = await fetch('/orders/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (response.ok) {
+                const order = await response.json();
+                alert(`Заказ #${order.id} успешно создан!`);
+                cart = [];
+                saveCart();
+                renderCart();
+                closeCartModal();
+            } else {
+                alert('Ошибка при создании заказа: ' + response.status);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Не удалось создать заказ');
+        }
+    }
+
+    // Обработчик кнопки "Открыть корзину"
+    document.getElementById('openCartBtn').addEventListener('click', openCartModal);
+
+    // ===================== КОНЕЦ КОРЗИНЫ =====================
 
         async function removeItem(btn) {
         const id = btn.getAttribute('data-id');
