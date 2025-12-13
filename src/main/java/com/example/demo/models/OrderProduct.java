@@ -38,8 +38,11 @@ public class OrderProduct {
         return this.count;
     }
 
-    public void setCount(long count) {
-        this.count = count;
+    public void plusCount(long count) {
+        this.count = this.count + count >= 0 ? this.count + count : 0;
+    }
+    public void minusCount(long count) {
+        this.count = this.count - count >= 0 ? this.count - count : 0;
     }
 
     public Product getProduct() {
