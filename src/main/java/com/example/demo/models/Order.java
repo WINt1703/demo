@@ -14,6 +14,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")
+    private Status status = Status.NEW;
 
     @ManyToOne
     @JoinColumn(name = "pickuppoint_id")
@@ -27,6 +28,8 @@ public class Order {
 
     private String username;
 
+    @GeneratedValue
+    @SequenceGenerator(initialValue = 100, allocationSize=1)
     @Column(name = "get_code")
     private int getCode;
 
