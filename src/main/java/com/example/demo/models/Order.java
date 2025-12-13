@@ -3,6 +3,7 @@ package com.example.demo.models;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -33,8 +34,8 @@ public class Order {
     @Column(name = "get_code")
     private int getCode;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<OrderProduct> orderProducts;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<OrderProduct> orderProducts = new HashSet<>();
 
     public long getId() {
         return this.id;

@@ -2,6 +2,7 @@ package com.example.demo.models;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -44,8 +45,8 @@ public class Product {
 
     private byte[] photo;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<OrderProduct> orderProducts;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private Set<OrderProduct> orderProducts = new HashSet<>();
 
     public String getId() {
         return this.id;
