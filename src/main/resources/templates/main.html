@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Товары</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: none;            /* по умолчанию скрыта */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-window {
+            background: #fff;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.4);
+        }
+
+        .modal-header,
+        .modal-footer {
+            padding: 10px 15px;
+            background: #f3f3f3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 10px 15px;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            border: none;
+            background: transparent;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* простая сетка */
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        /* позиция товара */
+        .cart-item {
+            display: flex;
+            border: 1px solid #cce;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .item-image img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
+
+        .item-main {
+            flex: 1;
+            padding: 0 10px;
+        }
+
+        .item-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        .discount {
+            font-size: 24px;
+            color: #0a0;
+            font-weight: bold;
+        }
+
+        .prices {
+            margin-top: 5px;
+        }
+
+        .price-new {
+            color: #c00;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .qty {
+            margin-top: 5px;
+        }
+
+        /* кнопки */
+        .btn-primary,
+        .btn-secondary,
+        .btn-danger {
+            padding: 5px 12px;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .btn-primary { background: #2e7d32; color: #fff; }
+        .btn-secondary { background: #ccc; }
+        .btn-danger { background: #c62828; color: #fff; }
+
+        .old-price {
+            text-decoration: line-through;
+            text-decoration-color: red;
+            text-decoration-thickness: 2px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .top-buttons button {
+            padding: 6px 14px;
+            margin-left: 8px;
+            border-radius: 3px;
+            border: 1px solid #0a8f60;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-primary {
+            background: #0fbf75;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #0da864;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #0a8f60;
+        }
+
+        .btn-secondary:hover {
+            background: #e8f5e9;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            padding: 10px 16px;
+            border-bottom: 1px solid #ddd;
+            background: #fff;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .products-list {
+            padding: 10px 16px;
+        }
+
+        .product-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 120px;
+            gap: 20px;
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 12px;
+            background: #fff;
+        }
+
+        .product-photo,
+        .product-main,
+        .product-discount {
+            display: flex;
+            align-items: center;
+        }
+
+        .photo-inner {
+            border: 1px solid #000;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+        }
+
+        .photo-inner img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .product-main {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .product-name {
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .product-desc,
+        .product-producer,
+        .product-price {
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .label {
+            font-weight: 600;
+        }
+
+        .discount-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            border: 1px solid #000;
+            padding: 20px 10px;
+            min-height: 100px;
+        }
+
+        .discount-value {
+            margin-top: 6px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .btn-action {
+            padding: 4px 10px;
+            font-size: 11px;
+            border: 1px solid #0a8f60;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .btn-edit {
+            background: #0fbf75;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 0;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #ddd;
+            background: #f5f5f5;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #000;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 16px;
+            border-top: 1px solid #ddd;
+            background: #f5f5f5;
+        }
+
+        .btn-modal {
+            padding: 8px 16px;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn-modal-save {
+            background: #0fbf75;
+            color: white;
+        }
+
+        .btn-modal-save:hover {
+            background: #0da864;
+        }
+
+        .btn-modal-cancel {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-modal-cancel:hover {
+            background: #d0d0d0;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+
+        /* Скрытые элементы в модали для редактирования */
+        .modal-field {
+            display: none;
+        }
+
+        .modal-field.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <div class="user-name" th:text="${userName}">Майя</div>
+
+    <div class="top-buttons">
+        <button type="button" id="openCartBtn">
+            Открыть корзину
+        </button>
+        <button class="btn-primary" type="button" onclick="openAddModal()">Товары</button>
+        <button class="btn-secondary" onclick="history.back()">Назад</button>
+    </div>
+</div>
+
+<div class="filters">
+    <form th:action="@{/}" method="get" id="searchForm" style="display: flex; gap: 8px; width: 100%;">
+        <input type="text"
+               name="search"
+               id="searchInput"
+               class="search-input"
+               th:value="${param.search != null ? param.search[0] : ''}"
+               placeholder="Поиск...">
+
+        <select name="sort" class="select" id="sortSelect" th:value="${param.sort != null ? param.sort[0] : ''}">
+            <option value="">сортировка</option>
+            <option value="titleAsc">По названию (А‑Я)</option>
+            <option value="titleDesc">По названию (Я‑А)</option>
+            <option value="costAsc">По цене (дешевые)</option>
+            <option value="costDesc">По цене (дорогие)</option>
+        </select>
+    </form>
+</div>
+
+<div class="products-list">
+    <div class="product-row" th:each="product : ${products}" th:data-product-id="${product.id}">
+        <!-- Фото -->
+        <div class="product-photo">
+            <div class="photo-inner">
+                <img th:if="${product.photo != null}"
+                     th:src="${@imageHelper.convertImageBytesToBase64(product.photo)}">
+                <img th:if="${product.photo == null}"
+                     th:src="@{/picture.png}">
+            </div>
+        </div>
+
+        <!-- Основная информация -->
+        <div class="product-main">
+            <div class="product-name" th:text="${product.title}">Наименование товара</div>
+            <div class="product-desc">
+                <span class="label">Описание: </span>
+                <span th:text="${product.description}">Краткое описание</span>
+            </div>
+            <div class="product-producer">
+                <span class="label">Производитель: </span>
+                <span th:text="${product.manufacturer.title}">Производитель</span>
+            </div>
+            <div class="product-price">
+                <span class="label">Цена: </span>
+                <span th:classappend="${product.discountAmount > 15} ? 'old-price'" th:text="${#numbers.formatDecimal(product.cost, 1, 2, 'DEFAULT')}">0.00</span>
+                <span th:if="${product.discountAmount > 15}" th:text="' → ' + ${#numbers.formatDecimal(product.cost * (100 - product.discountAmount) / 100, 1, 2, 'DEFAULT')}"></span>
+            </div>
+            <div class="product-actions">
+
+            </div>                <button class="action-btn btn-edit"
+                                          type="button"
+                                          th:attr="
+           data-id=${product.id},
+           data-title=${product.title},
+           data-description=${product.description},
+           data-category=${product.category.id},
+           data-cost=${product.cost},
+           data-quantityInStock=${product.quantityInStock},
+           data-unittype=${product.unitType.id},
+           data-cost=${product.manufacturer.id},
+           data-supplier=${product.supplier.id},
+           data-discount=${product.discountAmount},
+           data-max-discount-amount=${product.maxDiscountAmount}"
+                                          onclick="openEditModal(this)">
+            Изменить
+        </button>
+            <button
+                    class="delete-btn"
+                    th:data-id="${product.id}">
+                Удалить
+            </button>
+        </div>
+
+        <!-- Размер скидки -->
+        <div class="product-discount">
+            <div class="discount-inner">
+                <span class="label">Размер</span>
+                <span class="label">скидки</span>
+                <span class="discount-value" th:text="${product.discountAmount + '%'}">0%</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Изменить данные</h2>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">Данные обновлены успешно</div>
+            <form id="editForm" th:action="@{/products/update/}" method="post">
+                <div class="form-group">
+                    <label for="editTitle">Наименование</label>
+                    <input type="text" class="form-input" id="editTitle" name="title">
+                </div>
+
+                <div class="form-group">
+                    <label for="editDescription">Описание</label>
+                    <textarea class="form-textarea" id="editDescription" name="description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="editCategory">Категория товара</label>
+                    <select id="editCategory" name="categoryId">
+                        <option th:each="c : ${categories}"
+                                th:value="${c.id}"
+                                th:text="${c.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editCost">Стоимость за единицу</label>
+                    <input type="number" id="editCost" name="cost" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editQuantity">Количество на складе</label>
+                    <input type="number" id="editQuantity" name="quantity" value="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="editUnit">Единицы измерения</label>
+                    <select id="editUnit" name="unitTypeId">
+                        <option th:each="u : ${unittypes}"
+                                th:value="${u.id}"
+                                th:text="${u.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editManufacturer">Производитель</label>
+                    <select id="editManufacturer" name="manufacturerId">
+                        <option th:each="m : ${manufacturers}"
+                                th:value="${m.id}"
+                                th:text="${m.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editSupplier">Поставщик</label>
+                    <select id="editSupplier" name="supplierId">
+                        <option th:each="s : ${suppliers}"
+                                th:value="${s.id}"
+                                th:text="${s.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editMaxDiscount">Размер максимальной скидки</label>
+                    <input type="number" id="editMaxDiscount" name="maxDiscountAmount" min="0" max="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editCurrentDiscount">Размер действующей скидки</label>
+                    <input type="number" id="editCurrentDiscount" name="discountAmount" min="0" max="100" required>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal btn-modal-cancel" onclick="closeEditModal()">Отмена</button>
+            <button class="btn-modal btn-modal-save" type="button" onclick="submitEditForm()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ТОВАРА -->
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Добавить товар</h2>
+            <button class="modal-close" onclick="closeAddModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-info">Данные обновлены успешно</div>
+            <form id="addForm" th:action="@{/products/create}" method="post">
+                <div class="form-group">
+                    <label for="addTitle">Наименование</label>
+                    <input type="text" class="form-input" id="addTitle" name="title">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="addDescription">Описание</label>
+                    <textarea class="form-textarea" id="addDescription" name="description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="addCategory">Категория товара</label>
+                    <select id="addCategory" name="categoryId">
+                        <option th:each="c : ${categories}"
+                                th:value="${c.id}"
+                                th:text="${c.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="addCost">Стоимость за единицу</label>
+                    <input type="number" id="addCost" name="cost" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="addQuantity">Количество на складе</label>
+                    <input type="number" id="addQuantity" name="quantity" value="1">
+                </div>
+
+                <div class="form-group">
+                    <label for="addUnit">Единицы измерения</label>
+                    <select id="addUnit" name="unitTypeId">
+                        <option th:each="u : ${unittypes}"
+                                th:value="${u.id}"
+                                th:text="${u.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="addManufacturer">Производитель</label>
+                    <select id="addManufacturer" name="manufacturerId">
+                        <option th:each="m : ${manufacturers}"
+                                th:value="${m.id}"
+                                th:text="${m.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="addSupplier">Поставщик</label>
+                    <select id="addSupplier" name="supplierId">
+                        <option th:each="s : ${suppliers}"
+                                th:value="${s.id}"
+                                th:text="${s.title}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="addMaxDiscount">Размер максимальной скидки</label>
+                    <input type="number" id="addMaxDiscount" name="maxDiscountAmount" value="20" min="0" max="100" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="addCurrentDiscount">Размер действующей скидки</label>
+                    <input type="number" id="addCurrentDiscount" name="discountAmount" min="0" max="100" required>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal btn-modal-cancel" onclick="closeAddModal()">Отмена</button>
+            <button class="btn-modal btn-modal-save" type="button" onclick="submitAddForm()">Добавить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditModal(button) {
+        const p = button.dataset; // p.id, p.title, ...
+
+        const form = document.getElementById('editForm');
+        form.action = form.action + p.id;
+
+        // скрытые/текстовые поля
+        document.getElementById('editTitle').value       = p.title || '';
+        document.getElementById('editDescription').value = p.description || '';
+        document.getElementById('editCost').value        = p.cost || '';
+        document.getElementById('editQuantity').value    = p.quantityinstock || '';
+
+        // селекты
+        const categorySelect     = document.getElementById('editCategory');
+        const unitSelect         = document.getElementById('editUnit');
+        const manufacturerSelect = document.getElementById('editManufacturer');
+        const supplierSelect     = document.getElementById('editSupplier');
+
+        if (categorySelect && p.category)        categorySelect.value = p.category;
+        if (unitSelect && p.unittype)           unitSelect.value = p.unittype;
+        if (manufacturerSelect && p.manufacturer) manufacturerSelect.value = p.manufacturer;
+        if (supplierSelect && p.supplier)       supplierSelect.value = p.supplier;
+
+        // скидки
+        document.getElementById('editMaxDiscount').value     = p.maxDiscountAmount || '';
+        document.getElementById('editCurrentDiscount').value = p.discount || '';
+
+        // показать модалку
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.remove('active');
+    }
+
+    // --- отправка editForm через fetch, без редиректа ---
+    const editForm = document.getElementById('editForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const url = this.action;
+            const formData = new URLSearchParams(new FormData(editForm));
+
+            fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: formData
+            }).then(resp => {
+                if (resp.ok) {
+                    alert("Успешно изменено");
+                    document.getElementById('editModal').classList.remove('active');
+                } else {
+                    alert('Ошибка при обновлении: ' + resp.status);
+                }
+            }).catch(err => {
+                console.error(err);
+                alert('Не удалось отправить данные');
+            });
+        });
+    }
+
+    // вызывать из кнопки "Сохранить"
+    function submitEditForm() {
+        if (editForm) {
+            editForm.requestSubmit();
+        }
+    }
+
+    // Модалка добавления
+    function openAddModal() {
+        document.getElementById('addModal').classList.add('active');
+    }
+
+    const addForm = document.getElementById('addForm');
+    if (addForm) {
+        addForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const url = this.action;
+            const formData = new URLSearchParams(new FormData(addForm));
+
+            fetch(url, {
+                method: 'POST', // или this.method, если в форме стоит method="post"
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: formData
+            }).then(resp => {
+                if (resp.ok) {
+                    // показываем сообщение об успехе
+                    alert("Успешно добавленно");
+                    // можно закрыть модалку или очистить форму
+                    addForm.reset();
+                    document.getElementById('addModal').classList.remove('active');
+                } else {
+                    alert('Ошибка при добавлении: ' + resp.status);
+                }
+            }).catch(err => {
+                console.error(err);
+                alert('Не удалось отправить данные');
+            });
+        });
+    }
+
+    function submitAddForm() {
+        if (addForm) {
+            addForm.requestSubmit();
+        }
+    }
+
+    function closeAddModal() {
+        document.getElementById('addModal').classList.remove('active');
+    }
+
+    document.addEventListener('click', async function (e) {
+        if (!e.target.classList.contains('delete-btn')) return;
+
+        const id = e.target.getAttribute('data-id'); // здесь уже подставлен product.id
+        if (!confirm('Точно удалить?')) return;
+
+        const response = await fetch('/products/delete/' + id, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            e.target.closest('tr')?.remove();
+            alert('Удалено');
+        } else {
+            alert('Ошибка удаления: ' + response.status);
+        }
+    });
+
+    window.onclick = function(event) {
+        const editModal = document.getElementById('editModal');
+        const addModal  = document.getElementById('addModal');
+
+        if (event.target === editModal) {
+            editModal.classList.remove('active');
+        }
+        if (event.target === addModal) {
+            addModal.classList.remove('active');
+        }
+    }
+
+    // Поиск с задержкой
+    const searchInput = document.getElementById('searchInput');
+    const sortSelect  = document.getElementById('sortSelect');
+    let searchTimer;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                document.getElementById('searchForm').submit();
+            }, 500);
+        });
+    }
+
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function () {
+            document.getElementById('searchForm').submit();
+        });
+    }
+
+        async function removeItem(btn) {
+        const id = btn.getAttribute('data-id');
+        if (!confirm('Удалить позицию?')) return;
+
+        const resp = await fetch('/cart/items/' + id, { method: 'DELETE' });
+        if (resp.ok) {
+        btn.closest('.border').remove();
+    } else {
+        alert('Ошибка удаления позиции');
+    }
+    }
+
+        async function clearCart(btn) {
+        const orderId = btn.getAttribute('data-id');
+        if (!confirm('Очистить корзину?')) return;
+
+        const resp = await fetch('/cart/' + orderId, { method: 'DELETE' });
+        if (resp.ok) {
+        // простейший вариант – перезагрузить страницу
+        location.reload();
+    } else {
+        alert('Ошибка очистки корзины');
+    }
+    }
+</script>
+</body>
+</html>
