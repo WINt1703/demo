@@ -12,9 +12,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id")
-    private Status status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status")
 
     @ManyToOne
     @JoinColumn(name = "pickuppoint_id")
