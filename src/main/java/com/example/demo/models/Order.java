@@ -90,6 +90,16 @@ public class Order {
         this.getCode = getCode;
     }
 
+    public void addOrderProduct(OrderProduct op) {
+        this.orderProducts.add(op);
+        op.setOrder(this);
+    }
+
+    public void removeOrderProduct(OrderProduct op) {
+        this.orderProducts.remove(op);
+        op.setOrder(null);
+    }
+
     public Set<OrderProduct> getOrderProducts() {
         return this.orderProducts;
     }

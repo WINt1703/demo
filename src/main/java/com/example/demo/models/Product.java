@@ -142,4 +142,14 @@ public class Product {
     public void setPhoto(byte[] photo) {
         this.photo = photo;
     }
+
+    public void addOrderProduct(OrderProduct op) {
+        this.orderProducts.add(op);
+        op.setProduct(this);
+    }
+
+    public void removeOrderProduct(OrderProduct op) {
+        this.orderProducts.remove(op);
+        op.setProduct(null);
+    }
 }
