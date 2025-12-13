@@ -103,8 +103,4 @@ public class Order {
     public Set<OrderProduct> getOrderProducts() {
         return this.orderProducts;
     }
-
-    public void setOrderProducts(Set<OrderProduct> orderProducts) {
-        this.orderProducts = orderProducts;
-    }
 }
