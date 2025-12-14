@@ -19,8 +19,8 @@ public class User {
 
     private String password;
 
-    @ManyToOne
-    @JoinColumn(name = "role_id")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role_id")
     private Role role;
 
     public String getUsername() {
