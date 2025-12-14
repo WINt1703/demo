@@ -19,6 +19,9 @@
 <div class="flex justify-between items-center px-4 py-3 bg-gray-100 border-b border-gray-300">
     <div class="font-semibold text-sm" th:text="${userName}">Майя</div>
     <div class="flex gap-2">
+        <button type="button" id="openOrdersBtn" class="px-3 py-1.5 text-xs rounded border border-blue-600 bg-white text-blue-600 hover:bg-blue-50 cursor-pointer">
+            📋 Мои заказы
+        </button>
         <button type="button" id="openCartBtn" class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-white text-emerald-600 hover:bg-emerald-50 cursor-pointer">
             🛒 Корзина
         </button>
@@ -281,6 +284,19 @@
             <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="clearCartItems()">Очистить</button>
             <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" onclick="createOrder()">Оформить заказ</button>
         </div>
+    </div>
+</div>
+
+<!-- БОКОВОЕ МЕНЮ ЗАКАЗОВ -->
+<div id="ordersOverlay" class="fixed inset-0 z-40 bg-black/50 hidden" onclick="closeOrdersModal()"></div>
+<div id="ordersSidebar" class="fixed top-0 right-0 z-50 h-full w-[500px] bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
+        <h2 class="text-base font-semibold">📋 Мои заказы</h2>
+        <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeOrdersModal()">&times;</button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-5" id="ordersBody">
+        <div id="ordersEmpty" class="p-3 mb-3 rounded bg-blue-50 text-blue-700 border-l-4 border-blue-500 text-xs">У вас пока нет заказов</div>
+        <div id="ordersItems"></div>
     </div>
 </div>
 
@@ -793,6 +809,144 @@
     document.getElementById('openCartBtn').addEventListener('click', openCartModal);
 
     // ===================== КОНЕЦ КОРЗИНЫ =====================
+
+    // ===================== МОИ ЗАКАЗЫ =====================
+
+    // Открыть боковое меню заказов
+    async function openOrdersModal() {
+        document.getElementById('ordersOverlay').classList.remove('hidden');
+        document.getElementById('ordersSidebar').classList.remove('translate-x-full');
+        await loadOrders();
+    }
+
+    // Закрыть боковое меню заказов
+    function closeOrdersModal() {
+        document.getElementById('ordersOverlay').classList.add('hidden');
+        document.getElementById('ordersSidebar').classList.add('translate-x-full');
+    }
+
+    // Загрузить заказы пользователя
+    async function loadOrders() {
+        const ordersItems = document.getElementById('ordersItems');
+        const ordersEmpty = document.getElementById('ordersEmpty');
+
+        try {
+            const response = await fetch('/orders/my');
+
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки заказов');
+            }
+
+            const orders = await response.json();
+
+            if (orders.length === 0) {
+                ordersItems.innerHTML = '';
+                ordersEmpty.classList.remove('hidden');
+                return;
+            }
+
+            ordersEmpty.classList.add('hidden');
+
+            let html = '';
+            orders.forEach(order => {
+                const statusColors = {
+                    'NEW': 'bg-blue-100 text-blue-800',
+                    'IN_PROGRESS': 'bg-yellow-100 text-yellow-800',
+                    'COMPLETED': 'bg-green-100 text-green-800',
+                    'CANCELLED': 'bg-red-100 text-red-800'
+                };
+
+                const statusTexts = {
+                    'NEW': 'Новый',
+                    'IN_PROGRESS': 'В процессе',
+                    'COMPLETED': 'Завершен',
+                    'CANCELLED': 'Отменен'
+                };
+
+                const statusClass = statusColors[order.status] || 'bg-gray-100 text-gray-800';
+                const statusText = statusTexts[order.status] || order.status;
+
+                // Вычисляем общую стоимость заказа
+                let totalCost = 0;
+                let productsHtml = '';
+
+                order.products.forEach(product => {
+                    const discount = product.discountAmount || 0;
+                    const finalPrice = discount > 15 ? product.cost * (100 - discount) / 100 : product.cost;
+                    totalCost += finalPrice * (product.quantity || 1);
+
+                    productsHtml += `
+                        <div class="flex justify-between items-center text-xs mb-1 pb-1 border-b border-gray-100">
+                            <span class="flex-1">${product.title}</span>
+                            <span class="text-gray-600 mx-2">×${product.quantity || 1}</span>
+                            <span class="font-semibold">${finalPrice.toFixed(2)} ₽</span>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="border border-gray-200 rounded p-3 mb-3 bg-white shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <div class="font-bold text-sm">Заказ #${order.id}</div>
+                                <div class="text-xs text-gray-600 mt-1">
+                                    <div>Создан: ${formatDate(order.createDate)}</div>
+                                    <div>Доставка: ${formatDate(order.deliveryDate)}</div>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 text-xs rounded ${statusClass} font-semibold">
+                                ${statusText}
+                            </span>
+                        </div>
+
+                        <div class="mb-2">
+                            <div class="text-xs font-semibold text-gray-700 mb-1">Пункт выдачи:</div>
+                            <div class="text-xs text-gray-600">${order.pickUpPoint.address}</div>
+                        </div>
+
+                        <div class="mb-2">
+                            <div class="text-xs font-semibold text-gray-700 mb-1">Товары:</div>
+                            <div class="bg-gray-50 p-2 rounded">
+                                ${productsHtml}
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-200">
+                            <span class="text-xs font-semibold">Код получения:</span>
+                            <span class="font-mono font-bold text-sm text-emerald-600">${order.getCode}</span>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-2 mt-2 border-t border-gray-200">
+                            <span class="text-sm font-bold">Итого:</span>
+                            <span class="text-sm font-bold text-emerald-600">${totalCost.toFixed(2)} ₽</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            ordersItems.innerHTML = html;
+        } catch (err) {
+            console.error(err);
+            ordersEmpty.classList.remove('hidden');
+            ordersEmpty.textContent = 'Ошибка загрузки заказов';
+            ordersEmpty.classList.remove('text-blue-700', 'border-blue-500', 'bg-blue-50');
+            ordersEmpty.classList.add('text-red-700', 'border-red-500', 'bg-red-50');
+        }
+    }
+
+    // Форматирование даты
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
+    // Обработчик кнопки "Мои заказы"
+    document.getElementById('openOrdersBtn').addEventListener('click', openOrdersModal);
+
+    // ===================== КОНЕЦ МОИ ЗАКАЗЫ =====================
 
         async function removeItem(btn) {
         const id = btn.getAttribute('data-id');

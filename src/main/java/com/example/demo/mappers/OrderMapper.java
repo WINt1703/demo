@@ -7,6 +7,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", uses = {PickUpPointMapper.class, ProductMapper.class})
 public interface OrderMapper {
     Order toEntity(ResponseOrderDto orderDto);
@@ -19,5 +21,5 @@ public interface OrderMapper {
                       PickUpPoint pickUpPoint,
                       String username);
 
-    ResponseOrderDto fromEntity(Order order);
+    ResponseOrderDto fromEntity(Order order, List<Product> products);
 }

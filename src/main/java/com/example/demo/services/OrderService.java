@@ -60,7 +60,7 @@ public class OrderService {
                 this.orderProductRepository.save(orderProduct);
             }
 
-            return Optional.of(this.orderMapper.fromEntity(this.orderRepository.save(order)));
+            return Optional.of(this.orderMapper.fromEntity(this.orderRepository.save(order), order.getOrderProducts().stream().map(OrderProduct::getProduct).toList()));
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
@@ -69,11 +69,13 @@ public class OrderService {
         return Optional.empty();
     }
 
+    @Transactional
     public Optional<List<ResponseOrderDto>> getUserOrders(String username) {
         var orders = this.orderRepository.findAllByUsername(username);
 
         if (orders.isPresent()) {
-            return Optional.of(orders.orElseThrow().stream().map(this.orderMapper::fromEntity).toList());
+            return Optional.of(orders.orElseThrow().stream()
+                    .map(o -> this.orderMapper.fromEntity(o, o.getOrderProducts().stream().map(OrderProduct::getProduct).toList())).toList());
         }
 
         return Optional.empty();
