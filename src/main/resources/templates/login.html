@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация!</title>
+    <title>Authorization!</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="font-sans bg-gray-100 flex justify-center items-center min-h-screen p-5">
@@ -11,33 +11,33 @@
         <!-- Header -->
         <div class="bg-emerald-600 text-white py-5 px-5 text-center text-lg font-medium flex items-center justify-center gap-2">
             <span class="text-2xl">✎</span>
-            ООО СПОРТ
+            SPORT LLC
         </div>
 
         <!-- Body -->
         <div class="p-8">
             <!-- Error message -->
             <div th:if="${param.error}" class="bg-red-50 text-red-700 border-l-4 border-red-600 p-3 rounded mb-5 text-sm">
-                Неверное имя пользователя или пароль
+                Invalid username or password
             </div>
 
             <form th:action="@{/login}" method="POST" class="space-y-5">
                 <div>
-                    <label for="username" class="block mb-2 text-gray-700 text-sm font-medium">Логин</label>
+                    <label for="username" class="block mb-2 text-gray-700 text-sm font-medium">Username</label>
                     <input type="text"
                            id="username"
                            name="username"
-                           placeholder="Логин"
+                           placeholder="Username"
                            required
                            class="w-full px-3 py-2.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition-all">
                 </div>
 
                 <div>
-                    <label for="password" class="block mb-2 text-gray-700 text-sm font-medium">Пароль</label>
+                    <label for="password" class="block mb-2 text-gray-700 text-sm font-medium">Password</label>
                     <input type="password"
                            id="password"
                            name="password"
-                           placeholder="Пароль"
+                           placeholder="Password"
                            required
                            class="w-full px-3 py-2.5 border border-gray-300 rounded text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 transition-all">
                 </div>

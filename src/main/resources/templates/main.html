@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Товары</title>
+    <title>Products</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .modal { display: none; }
@@ -20,13 +20,13 @@
     <div class="font-semibold text-sm" th:text="${userName}">Майя</div>
     <div class="flex gap-2">
         <button type="button" id="openOrdersBtn" class="px-3 py-1.5 text-xs rounded border border-blue-600 bg-white text-blue-600 hover:bg-blue-50 cursor-pointer">
-            📋 Мои заказы
+            📋 My Orders
         </button>
         <button type="button" id="openCartBtn" class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-white text-emerald-600 hover:bg-emerald-50 cursor-pointer">
-            🛒 Корзина
+            🛒 Cart
         </button>
-        <button th:if="${userRole.name() != 'USER'}" class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" type="button" onclick="openAddModal()">+ Товар</button>
-        <button class="px-3 py-1.5 text-xs rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 cursor-pointer" onclick="history.back()">Назад</button>
+        <button th:if="${userRole.name() != 'USER'}" class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" type="button" onclick="openAddModal()">+ Product</button>
+        <button class="px-3 py-1.5 text-xs rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 cursor-pointer" onclick="history.back()">Back</button>
     </div>
 </div>
 
@@ -38,15 +38,15 @@
                id="searchInput"
                class="flex-1 px-2.5 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
                th:value="${param.search != null ? param.search[0] : ''}"
-               placeholder="Поиск...">
+               placeholder="Search...">
 
         <select name="sort" id="sortSelect" th:value="${param.sort != null ? param.sort[0] : ''}"
                 class="px-2.5 py-1.5 text-xs border border-gray-300 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
-            <option value="">сортировка</option>
-            <option value="titleAsc">По названию (А‑Я)</option>
-            <option value="titleDesc">По названию (Я‑А)</option>
-            <option value="costAsc">По цене (дешевые)</option>
-            <option value="costDesc">По цене (дорогие)</option>
+            <option value="">sort</option>
+            <option value="titleAsc">By name (A-Z)</option>
+            <option value="titleDesc">By name (Z-A)</option>
+            <option value="costAsc">By price (low)</option>
+            <option value="costDesc">By price (high)</option>
         </select>
     </form>
 </div>
@@ -54,33 +54,33 @@
 <!-- Products List -->
 <div class="p-4 space-y-3">
     <div class="grid grid-cols-[120px_1fr_120px] gap-5 border border-gray-800 p-4 bg-white rounded" th:each="product : ${products}" th:data-product-id="${product.id}">
-        <!-- Фото -->
+        <!-- Photo -->
         <div class="flex items-center">
             <div class="border border-gray-800 p-5 w-full min-h-[100px] flex items-center justify-center bg-gray-100">
                 <img th:if="${product.photo != null}"
                      th:src="${@imageHelper.convertImageBytesToBase64(product.photo)}"
-                     alt="Фото товара"
+                     alt="Product photo"
                      class="max-w-full max-h-full">
                 <img th:if="${product.photo == null}"
                      th:src="@{/picture.png}"
-                     alt="Нет фото"
+                     alt="No photo"
                      class="max-w-full max-h-full">
             </div>
         </div>
 
-        <!-- Основная информация -->
+        <!-- Main information -->
         <div class="flex flex-col justify-center">
-            <div class="font-bold mb-2 text-sm" th:text="${product.title}">Наименование товара</div>
+            <div class="font-bold mb-2 text-sm" th:text="${product.title}">Product name</div>
             <div class="mb-1.5 text-xs">
-                <span class="font-semibold">Описание: </span>
-                <span th:text="${product.description}">Краткое описание</span>
+                <span class="font-semibold">Description: </span>
+                <span th:text="${product.description}">Short description</span>
             </div>
             <div class="mb-1.5 text-xs">
-                <span class="font-semibold">Производитель: </span>
-                <span th:text="${product.manufacturer.title}">Производитель</span>
+                <span class="font-semibold">Manufacturer: </span>
+                <span th:text="${product.manufacturer.title}">Manufacturer</span>
             </div>
             <div class="mb-1.5 text-xs">
-                <span class="font-semibold">Цена: </span>
+                <span class="font-semibold">Price: </span>
                 <span th:classappend="${product.discountAmount > 15} ? 'old-price'" th:text="${#numbers.formatDecimal(product.cost, 1, 2, 'DEFAULT')}">0.00</span>
                 <span class="text-red-600 font-bold ml-2" th:if="${product.discountAmount > 15}" th:text="' → ' + ${#numbers.formatDecimal(product.cost * (100 - product.discountAmount) / 100, 1, 2, 'DEFAULT')}"></span>
             </div>
@@ -100,11 +100,11 @@
                             data-discount=${product.discountAmount},
                             data-max-discount-amount=${product.maxDiscountAmount}"
                         onclick="openEditModal(this)">
-                    Изменить
+                    Edit
                 </button>
                 <button th:if="${userRole.name() != 'USER'}" class="px-2.5 py-1 text-[11px] rounded border border-red-500 bg-red-500 text-white hover:bg-red-600 cursor-pointer delete-btn"
                         th:data-id="${product.id}">
-                    Удалить
+                    Delete
                 </button>
                 <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
                         type="button"
@@ -113,195 +113,195 @@
                         th:data-cost="${product.cost}"
                         th:data-discount="${product.discountAmount}"
                         onclick="addToCart(this)">
-                    🛒 В корзину
+                    🛒 Add to Cart
                 </button>
             </div>
         </div>
 
-        <!-- Размер скидки -->
+        <!-- Discount size -->
         <div class="flex items-center">
             <div class="flex flex-col items-center justify-center w-full border border-gray-800 py-5 px-2.5 min-h-[100px]">
-                <span class="font-semibold text-xs">Размер</span>
-                <span class="font-semibold text-xs">скидки</span>
+                <span class="font-semibold text-xs">Discount</span>
+                <span class="font-semibold text-xs">size</span>
                 <span class="mt-1.5 text-xl font-bold" th:classappend="${product.discountAmount > 15} ? 'text-green-600' : ''" th:text="${product.discountAmount + '%'}">0%</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ -->
+<!-- EDIT MODAL WINDOW -->
 <div id="editModal" class="modal fixed inset-0 z-50 bg-black/50 items-center justify-center">
     <div class="bg-white w-[90%] max-w-xl rounded shadow-xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-            <h2 class="text-base font-semibold">Изменить данные</h2>
+            <h2 class="text-base font-semibold">Edit Data</h2>
             <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeEditModal()">&times;</button>
         </div>
         <div class="p-5">
             <form id="editForm" th:action="@{/products/update/}" method="post" class="space-y-4">
                 <div>
-                    <label for="editTitle" class="block text-xs font-semibold mb-1.5">Наименование</label>
+                    <label for="editTitle" class="block text-xs font-semibold mb-1.5">Name</label>
                     <input type="text" id="editTitle" name="title" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="editDescription" class="block text-xs font-semibold mb-1.5">Описание</label>
+                    <label for="editDescription" class="block text-xs font-semibold mb-1.5">Description</label>
                     <textarea id="editDescription" name="description" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
                 </div>
                 <div>
-                    <label for="editCategory" class="block text-xs font-semibold mb-1.5">Категория товара</label>
+                    <label for="editCategory" class="block text-xs font-semibold mb-1.5">Product Category</label>
                     <select id="editCategory" name="categoryId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="editCost" class="block text-xs font-semibold mb-1.5">Стоимость за единицу</label>
+                    <label for="editCost" class="block text-xs font-semibold mb-1.5">Cost per Unit</label>
                     <input type="number" id="editCost" name="cost" step="0.01" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="editQuantity" class="block text-xs font-semibold mb-1.5">Количество на складе</label>
+                    <label for="editQuantity" class="block text-xs font-semibold mb-1.5">Quantity in Stock</label>
                     <input type="number" id="editQuantity" name="quantity" value="1" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="editUnit" class="block text-xs font-semibold mb-1.5">Единицы измерения</label>
+                    <label for="editUnit" class="block text-xs font-semibold mb-1.5">Unit of Measurement</label>
                     <select id="editUnit" name="unitTypeId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="u : ${unittypes}" th:value="${u.id}" th:text="${u.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="editManufacturer" class="block text-xs font-semibold mb-1.5">Производитель</label>
+                    <label for="editManufacturer" class="block text-xs font-semibold mb-1.5">Manufacturer</label>
                     <select id="editManufacturer" name="manufacturerId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="editSupplier" class="block text-xs font-semibold mb-1.5">Поставщик</label>
+                    <label for="editSupplier" class="block text-xs font-semibold mb-1.5">Supplier</label>
                     <select id="editSupplier" name="supplierId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="editMaxDiscount" class="block text-xs font-semibold mb-1.5">Размер максимальной скидки</label>
+                    <label for="editMaxDiscount" class="block text-xs font-semibold mb-1.5">Maximum Discount Size</label>
                     <input type="number" id="editMaxDiscount" name="maxDiscountAmount" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="editCurrentDiscount" class="block text-xs font-semibold mb-1.5">Размер действующей скидки</label>
+                    <label for="editCurrentDiscount" class="block text-xs font-semibold mb-1.5">Current Discount Size</label>
                     <input type="number" id="editCurrentDiscount" name="discountAmount" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
             </form>
         </div>
         <div class="flex gap-2 justify-end px-4 py-3 border-t bg-gray-100">
-            <button class="px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="closeEditModal()">Отмена</button>
-            <button class="px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" type="button" onclick="submitEditForm()">Сохранить</button>
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="closeEditModal()">Cancel</button>
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" type="button" onclick="submitEditForm()">Save</button>
         </div>
     </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ТОВАРА -->
+<!-- ADD PRODUCT MODAL WINDOW -->
 <div id="addModal" class="modal fixed inset-0 z-50 bg-black/50 items-center justify-center">
     <div class="bg-white w-[90%] max-w-xl rounded shadow-xl max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-            <h2 class="text-base font-semibold">Добавить товар</h2>
+            <h2 class="text-base font-semibold">Add Product</h2>
             <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeAddModal()">&times;</button>
         </div>
         <div class="p-5">
             <form id="addForm" th:action="@{/products/create}" method="post" class="space-y-4">
                 <div>
-                    <label for="addTitle" class="block text-xs font-semibold mb-1.5">Наименование</label>
+                    <label for="addTitle" class="block text-xs font-semibold mb-1.5">Name</label>
                     <input type="text" id="addTitle" name="title" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="addDescription" class="block text-xs font-semibold mb-1.5">Описание</label>
+                    <label for="addDescription" class="block text-xs font-semibold mb-1.5">Description</label>
                     <textarea id="addDescription" name="description" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
                 </div>
                 <div>
-                    <label for="addCategory" class="block text-xs font-semibold mb-1.5">Категория товара</label>
+                    <label for="addCategory" class="block text-xs font-semibold mb-1.5">Product Category</label>
                     <select id="addCategory" name="categoryId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="addCost" class="block text-xs font-semibold mb-1.5">Стоимость за единицу</label>
+                    <label for="addCost" class="block text-xs font-semibold mb-1.5">Cost per Unit</label>
                     <input type="number" id="addCost" name="cost" step="0.01" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="addQuantity" class="block text-xs font-semibold mb-1.5">Количество на складе</label>
+                    <label for="addQuantity" class="block text-xs font-semibold mb-1.5">Quantity in Stock</label>
                     <input type="number" id="addQuantity" name="quantity" value="1" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="addUnit" class="block text-xs font-semibold mb-1.5">Единицы измерения</label>
+                    <label for="addUnit" class="block text-xs font-semibold mb-1.5">Unit of Measurement</label>
                     <select id="addUnit" name="unitTypeId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="u : ${unittypes}" th:value="${u.id}" th:text="${u.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="addManufacturer" class="block text-xs font-semibold mb-1.5">Производитель</label>
+                    <label for="addManufacturer" class="block text-xs font-semibold mb-1.5">Manufacturer</label>
                     <select id="addManufacturer" name="manufacturerId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="addSupplier" class="block text-xs font-semibold mb-1.5">Поставщик</label>
+                    <label for="addSupplier" class="block text-xs font-semibold mb-1.5">Supplier</label>
                     <select id="addSupplier" name="supplierId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.title}"></option>
                     </select>
                 </div>
                 <div>
-                    <label for="addMaxDiscount" class="block text-xs font-semibold mb-1.5">Размер максимальной скидки</label>
+                    <label for="addMaxDiscount" class="block text-xs font-semibold mb-1.5">Maximum Discount Size</label>
                     <input type="number" id="addMaxDiscount" name="maxDiscountAmount" value="20" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label for="addCurrentDiscount" class="block text-xs font-semibold mb-1.5">Размер действующей скидки</label>
+                    <label for="addCurrentDiscount" class="block text-xs font-semibold mb-1.5">Current Discount Size</label>
                     <input type="number" id="addCurrentDiscount" name="discountAmount" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
             </form>
         </div>
         <div class="flex gap-2 justify-end px-4 py-3 border-t bg-gray-100">
-            <button class="px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="closeAddModal()">Отмена</button>
-            <button class="px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" type="button" onclick="submitAddForm()">Добавить</button>
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="closeAddModal()">Cancel</button>
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" type="button" onclick="submitAddForm()">Add</button>
         </div>
     </div>
 </div>
 
-<!-- БОКОВОЕ МЕНЮ КОРЗИНЫ -->
+<!-- CART SIDEBAR MENU -->
 <div id="cartOverlay" class="fixed inset-0 z-40 bg-black/50 hidden" onclick="closeCartModal()"></div>
 <div id="cartSidebar" class="fixed top-0 right-0 z-50 h-full w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
     <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-        <h2 class="text-base font-semibold">🛒 Корзина</h2>
+        <h2 class="text-base font-semibold">🛒 Cart</h2>
         <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeCartModal()">&times;</button>
     </div>
     <div class="flex-1 overflow-y-auto p-5" id="cartBody">
-        <div id="cartEmpty" class="p-3 mb-3 rounded bg-blue-50 text-blue-700 border-l-4 border-blue-500 text-xs">Корзина пуста</div>
+        <div id="cartEmpty" class="p-3 mb-3 rounded bg-blue-50 text-blue-700 border-l-4 border-blue-500 text-xs">Cart is empty</div>
         <div id="cartItems"></div>
         <div id="pickUpPointGroup" class="hidden mt-4">
-            <label for="pickUpPointSelect" class="block text-xs font-semibold mb-1.5">Пункт выдачи</label>
+            <label for="pickUpPointSelect" class="block text-xs font-semibold mb-1.5">Pick-up Point</label>
             <select id="pickUpPointSelect" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 <option th:each="p : ${pickuppoints}" th:value="${p.id}" th:text="${p.address}"></option>
             </select>
         </div>
     </div>
     <div class="flex flex-col gap-2.5 px-4 py-3 border-t bg-gray-100">
-        <div id="cartTotal" class="font-bold text-sm w-full">Итого: 0.00 ₽</div>
+        <div id="cartTotal" class="font-bold text-sm w-full">Total: 0.00 ₽</div>
         <div class="flex gap-2.5 w-full">
-            <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="clearCartItems()">Очистить</button>
-            <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" onclick="createOrder()">Оформить заказ</button>
+            <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="clearCartItems()">Clear</button>
+            <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" onclick="createOrder()">Place Order</button>
         </div>
     </div>
 </div>
 
-<!-- БОКОВОЕ МЕНЮ ЗАКАЗОВ -->
+<!-- ORDERS SIDEBAR MENU -->
 <div id="ordersOverlay" class="fixed inset-0 z-40 bg-black/50 hidden" onclick="closeOrdersModal()"></div>
 <div id="ordersSidebar" class="fixed top-0 right-0 z-50 h-full w-[500px] bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
     <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
-        <h2 class="text-base font-semibold">📋 Мои заказы</h2>
+        <h2 class="text-base font-semibold">📋 My Orders</h2>
         <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeOrdersModal()">&times;</button>
     </div>
     <div class="flex-1 overflow-y-auto p-5" id="ordersBody">
-        <div id="ordersEmpty" class="p-3 mb-3 rounded bg-blue-50 text-blue-700 border-l-4 border-blue-500 text-xs">У вас пока нет заказов</div>
+        <div id="ordersEmpty" class="p-3 mb-3 rounded bg-blue-50 text-blue-700 border-l-4 border-blue-500 text-xs">You don't have any orders yet</div>
         <div id="ordersItems"></div>
     </div>
 </div>
 
 <script>
-    // Получаем роль пользователя из Thymeleaf
+    // Get user role from Thymeleaf
     const userRole = /*[[${userRole.name()}]]*/ 'USER';
 
     function openEditModal(button) {
@@ -310,13 +310,13 @@
         const form = document.getElementById('editForm');
         form.action = form.action + p.id;
 
-        // скрытые/текстовые поля
+        // hidden/text fields
         document.getElementById('editTitle').value       = p.title || '';
         document.getElementById('editDescription').value = p.description || '';
         document.getElementById('editCost').value        = p.cost || '';
         document.getElementById('editQuantity').value    = p.quantityinstock || '';
 
-        // селекты
+        // selects
         const categorySelect     = document.getElementById('editCategory');
         const unitSelect         = document.getElementById('editUnit');
         const manufacturerSelect = document.getElementById('editManufacturer');
@@ -327,11 +327,11 @@
         if (manufacturerSelect && p.manufacturer) manufacturerSelect.value = p.manufacturer;
         if (supplierSelect && p.supplier)       supplierSelect.value = p.supplier;
 
-        // скидки
+        // discounts
         document.getElementById('editMaxDiscount').value     = p.maxDiscountAmount || '';
         document.getElementById('editCurrentDiscount').value = p.discount || '';
 
-        // показать модалку
+        // show modal
         document.getElementById('editModal').classList.add('active');
     }
 
@@ -339,7 +339,7 @@
         document.getElementById('editModal').classList.remove('active');
     }
 
-    // --- отправка editForm через fetch, без редиректа ---
+    // --- submit editForm via fetch, without redirect ---
     const editForm = document.getElementById('editForm');
     if (editForm) {
         editForm.addEventListener('submit', function (e) {
@@ -356,13 +356,13 @@
                 if (resp.ok) {
                     return resp.json();
                 } else {
-                    alert('Ошибка при обновлении: ' + resp.status);
+                    alert('Update error: ' + resp.status);
                     throw new Error('Update failed');
                 }
             }).then(product => {
-                // Обновляем карточку товара в DOM
+                // Update product card in DOM
                 updateProductCardInDOM(product);
-                alert("Успешно изменено");
+                alert("Successfully updated");
                 document.getElementById('editModal').classList.remove('active');
             }).catch(err => {
                 console.error(err);
@@ -373,7 +373,7 @@
         });
     }
 
-    // вызывать из кнопки "Сохранить"
+    // call from "Save" button
     function submitEditForm() {
         if (editForm) {
             editForm.requestSubmit();
@@ -533,13 +533,13 @@
                 if (resp.ok) {
                     return resp.json();
                 } else {
-                    alert('Ошибка при добавлении: ' + resp.status);
+                    alert('Add error: ' + resp.status);
                     throw new Error('Add failed');
                 }
             }).then(product => {
-                // Добавляем новую карточку товара в DOM
+                // Add new product card to DOM
                 addProductCardToDOM(product);
-                alert("Успешно добавлено");
+                alert("Successfully added");
                 addForm.reset();
                 document.getElementById('addModal').classList.remove('active');
             }).catch(err => {
@@ -577,9 +577,9 @@
             if (productCard) {
                 productCard.remove();
             }
-            alert('Удалено');
+            alert('Deleted');
         } else {
-            alert('Ошибка удаления: ' + response.status);
+            alert('Delete error: ' + response.status);
         }
     });
 
@@ -620,30 +620,30 @@
     // Локальное хранилище корзины
     let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
-    // Открыть боковое меню корзины
+    // Open cart sidebar menu
     function openCartModal() {
         document.getElementById('cartOverlay').classList.remove('hidden');
         document.getElementById('cartSidebar').classList.remove('translate-x-full');
         renderCart();
     }
 
-    // Закрыть боковое меню корзины
+    // Close cart sidebar menu
     function closeCartModal() {
         document.getElementById('cartOverlay').classList.add('hidden');
         document.getElementById('cartSidebar').classList.add('translate-x-full');
     }
 
-    // Добавить товар в корзину
+    // Add product to cart
     function addToCart(btn) {
         const id = btn.getAttribute('data-id');
         const title = btn.getAttribute('data-title');
         const cost = parseFloat(btn.getAttribute('data-cost'));
         const discount = parseInt(btn.getAttribute('data-discount') || '0');
 
-        // Рассчитываем цену со скидкой
+        // Calculate price with discount
         const finalCost = discount > 15 ? cost * (100 - discount) / 100 : cost;
 
-        // Проверяем, есть ли уже такой товар в корзине
+        // Check if product is already in cart
         const existingItem = cart.find(item => item.id === id);
         if (existingItem) {
             existingItem.quantity++;
@@ -659,15 +659,15 @@
         }
 
         saveCart();
-        alert('Товар добавлен в корзину');
+        alert('Product added to cart');
     }
 
-    // Сохранить корзину в localStorage
+    // Save cart to localStorage
     function saveCart() {
         localStorage.setItem('cart', JSON.stringify(cart));
     }
 
-    // Отрисовка корзины
+    // Render cart
     function renderCart() {
         const cartItems = document.getElementById('cartItems');
         const cartEmpty = document.getElementById('cartEmpty');
@@ -712,17 +712,17 @@
                             <button class="w-6 h-6 text-xs rounded bg-gray-200 hover:bg-gray-300" onclick="changeQuantity(${index}, 1)">+</button>
                         </div>
                         <div class="font-bold text-sm">${itemTotal.toFixed(2)} ₽</div>
-                        <button class="text-red-500 hover:text-red-700 text-xs" onclick="removeFromCart(${index})">✕ Удалить</button>
+                        <button class="text-red-500 hover:text-red-700 text-xs" onclick="removeFromCart(${index})">✕ Remove</button>
                     </div>
                 </div>
             `;
         });
 
         cartItems.innerHTML = html;
-        cartTotal.textContent = `Итого: ${total.toFixed(2)} ₽`;
+        cartTotal.textContent = `Total: ${total.toFixed(2)} ₽`;
     }
 
-    // Изменить количество товара в корзине
+    // Change product quantity in cart
     function changeQuantity(index, delta) {
         cart[index].quantity += delta;
         if (cart[index].quantity <= 0) {
@@ -732,16 +732,16 @@
         renderCart();
     }
 
-    // Удалить товар из корзины
+    // Remove product from cart
     function removeFromCart(index) {
         cart.splice(index, 1);
         saveCart();
         renderCart();
     }
 
-    // Очистить корзину
+    // Clear cart
     function clearCartItems() {
-        if (!confirm('Очистить корзину?')) return;
+        if (!confirm('Clear cart?')) return;
         cart = [];
         saveCart();
         renderCart();
@@ -791,41 +791,41 @@
 
             if (response.ok) {
                 const order = await response.json();
-                alert(`Заказ #${order.id} успешно создан!`);
+                alert(`Order #${order.id} successfully created!`);
                 cart = [];
                 saveCart();
                 renderCart();
                 closeCartModal();
             } else {
-                alert('Ошибка при создании заказа: ' + response.status);
+                alert('Order creation error: ' + response.status);
             }
         } catch (err) {
             console.error(err);
-            alert('Не удалось создать заказ');
+            alert('Failed to create order');
         }
     }
 
-    // Обработчик кнопки "Открыть корзину"
+    // Handler for "Open Cart" button
     document.getElementById('openCartBtn').addEventListener('click', openCartModal);
 
-    // ===================== КОНЕЦ КОРЗИНЫ =====================
+    // ===================== END OF CART =====================
 
-    // ===================== МОИ ЗАКАЗЫ =====================
+    // ===================== MY ORDERS =====================
 
-    // Открыть боковое меню заказов
+    // Open orders sidebar menu
     async function openOrdersModal() {
         document.getElementById('ordersOverlay').classList.remove('hidden');
         document.getElementById('ordersSidebar').classList.remove('translate-x-full');
         await loadOrders();
     }
 
-    // Закрыть боковое меню заказов
+    // Close orders sidebar menu
     function closeOrdersModal() {
         document.getElementById('ordersOverlay').classList.add('hidden');
         document.getElementById('ordersSidebar').classList.add('translate-x-full');
     }
 
-    // Загрузить заказы пользователя
+    // Load user orders
     async function loadOrders() {
         const ordersItems = document.getElementById('ordersItems');
         const ordersEmpty = document.getElementById('ordersEmpty');
@@ -834,7 +834,7 @@
             const response = await fetch('/orders/my');
 
             if (!response.ok) {
-                throw new Error('Ошибка загрузки заказов');
+                throw new Error('Order loading error');
             }
 
             const orders = await response.json();
@@ -857,16 +857,16 @@
                 };
 
                 const statusTexts = {
-                    'NEW': 'Новый',
-                    'IN_PROGRESS': 'В процессе',
-                    'COMPLETED': 'Завершен',
-                    'CANCELLED': 'Отменен'
+                    'NEW': 'New',
+                    'IN_PROGRESS': 'In Progress',
+                    'COMPLETED': 'Completed',
+                    'CANCELLED': 'Cancelled'
                 };
 
                 const statusClass = statusColors[order.status] || 'bg-gray-100 text-gray-800';
                 const statusText = statusTexts[order.status] || order.status;
 
-                // Вычисляем общую стоимость заказа
+                // Calculate total order cost
                 let totalCost = 0;
                 let productsHtml = '';
 
@@ -888,10 +888,10 @@
                     <div class="border border-gray-200 rounded p-3 mb-3 bg-white shadow-sm">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <div class="font-bold text-sm">Заказ #${order.id}</div>
+                                <div class="font-bold text-sm">Order #${order.id}</div>
                                 <div class="text-xs text-gray-600 mt-1">
-                                    <div>Создан: ${formatDate(order.createDate)}</div>
-                                    <div>Доставка: ${formatDate(order.deliveryDate)}</div>
+                                    <div>Created: ${formatDate(order.createDate)}</div>
+                                    <div>Delivery: ${formatDate(order.deliveryDate)}</div>
                                 </div>
                             </div>
                             <span class="px-2 py-1 text-xs rounded ${statusClass} font-semibold">
@@ -900,24 +900,24 @@
                         </div>
 
                         <div class="mb-2">
-                            <div class="text-xs font-semibold text-gray-700 mb-1">Пункт выдачи:</div>
+                            <div class="text-xs font-semibold text-gray-700 mb-1">Pick-up Point:</div>
                             <div class="text-xs text-gray-600">${order.pickUpPoint.address}</div>
                         </div>
 
                         <div class="mb-2">
-                            <div class="text-xs font-semibold text-gray-700 mb-1">Товары:</div>
+                            <div class="text-xs font-semibold text-gray-700 mb-1">Products:</div>
                             <div class="bg-gray-50 p-2 rounded">
                                 ${productsHtml}
                             </div>
                         </div>
 
                         <div class="flex justify-between items-center pt-2 border-t border-gray-200">
-                            <span class="text-xs font-semibold">Код получения:</span>
+                            <span class="text-xs font-semibold">Pickup Code:</span>
                             <span class="font-mono font-bold text-sm text-emerald-600">${order.getCode}</span>
                         </div>
 
                         <div class="flex justify-between items-center pt-2 mt-2 border-t border-gray-200">
-                            <span class="text-sm font-bold">Итого:</span>
+                            <span class="text-sm font-bold">Total:</span>
                             <span class="text-sm font-bold text-emerald-600">${totalCost.toFixed(2)} ₽</span>
                         </div>
                     </div>
@@ -928,13 +928,13 @@
         } catch (err) {
             console.error(err);
             ordersEmpty.classList.remove('hidden');
-            ordersEmpty.textContent = 'Ошибка загрузки заказов';
+            ordersEmpty.textContent = 'Order loading error';
             ordersEmpty.classList.remove('text-blue-700', 'border-blue-500', 'bg-blue-50');
             ordersEmpty.classList.add('text-red-700', 'border-red-500', 'bg-red-50');
         }
     }
 
-    // Форматирование даты
+    // Date formatting
     function formatDate(dateString) {
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
@@ -943,33 +943,33 @@
         return `${day}.${month}.${year}`;
     }
 
-    // Обработчик кнопки "Мои заказы"
+    // Handler for "My Orders" button
     document.getElementById('openOrdersBtn').addEventListener('click', openOrdersModal);
 
-    // ===================== КОНЕЦ МОИ ЗАКАЗЫ =====================
+    // ===================== END OF MY ORDERS =====================
 
         async function removeItem(btn) {
         const id = btn.getAttribute('data-id');
-        if (!confirm('Удалить позицию?')) return;
+        if (!confirm('Delete item?')) return;
 
         const resp = await fetch('/cart/items/' + id, { method: 'DELETE' });
         if (resp.ok) {
         btn.closest('.border').remove();
     } else {
-        alert('Ошибка удаления позиции');
+        alert('Item deletion error');
     }
     }
 
         async function clearCart(btn) {
         const orderId = btn.getAttribute('data-id');
-        if (!confirm('Очистить корзину?')) return;
+        if (!confirm('Clear cart?')) return;
 
         const resp = await fetch('/cart/' + orderId, { method: 'DELETE' });
         if (resp.ok) {
-        // простейший вариант – перезагрузить страницу
+        // simplest option - reload the page
         location.reload();
     } else {
-        alert('Ошибка очистки корзины');
+        alert('Cart clearing error');
     }
     }
 </script>
