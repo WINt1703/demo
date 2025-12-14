@@ -32,8 +32,8 @@ public class Order {
     @Column(name = "get_code", insertable = false, updatable = false)
     private int getCode;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<OrderProduct> orderProducts = new HashSet<>();
+    @OneToMany(mappedBy = "order")
+    private Set<OrderProduct> orderProducts;
 
     public long getId() {
         return this.id;

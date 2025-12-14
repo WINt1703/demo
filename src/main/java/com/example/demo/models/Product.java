@@ -45,8 +45,8 @@ public class Product {
 
     private byte[] photo;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<OrderProduct> orderProducts = new HashSet<>();
+    @OneToMany(mappedBy = "product")
+    private Set<OrderProduct> orderProducts;
 
     public String getId() {
         return this.id;
