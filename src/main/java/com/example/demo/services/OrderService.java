@@ -22,28 +22,24 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final PickUpPointRepository pickUpPointRepository;
-    private final OrderProductRepository orderProductRepository;
     private final OrderMapper orderMapper;
 
     public OrderService(OrderRepository orderRepository,
-                        OrderProductRepository orderProductRepository,
                         OrderMapper orderMapper,
                         PickUpPointRepository pickUpPointRepository,
                         ProductRepository productRepository) {
         this.orderRepository = orderRepository;
-        this.orderProductRepository = orderProductRepository;
         this.orderMapper = orderMapper;
         this.pickUpPointRepository = pickUpPointRepository;
         this.productRepository = productRepository;
     }
 
-    public Optional<ResponseOrderDto> createOrder(RequestOrderDto orderDto) {
+    public Optional<ResponseOrderDto> createOrder(RequestOrderDto orderDto, String username) {
         try {
             var pickUp = this.pickUpPointRepository.findById(orderDto.pickUpPointId()).orElseThrow();
             var order = new Order();
 
-            this.orderMapper.copyToEntity(order, orderDto, pickUp);
-            order = this.orderRepository.save(order);
+            this.orderMapper.copyToEntity(order, orderDto, pickUp, username);
 
             for(ProductIdCount productIdCount: orderDto.productIdCountCollection()) {
                 var product = this.productRepository.findById(productIdCount.productId()).orElseThrow();
@@ -51,11 +47,9 @@ public class OrderService {
                 product.addOrderProduct(orderProduct);
                 order.addOrderProduct(orderProduct);
                 orderProduct.plusCount(productIdCount.count());
-
-                this.orderProductRepository.save(orderProduct);
             }
 
-            return Optional.of(this.orderMapper.fromEntity(order));
+            return Optional.of(this.orderMapper.fromEntity(this.orderRepository.save(order)));
         }
         catch (Exception e) {
             System.out.println(e.getMessage());

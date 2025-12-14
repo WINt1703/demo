@@ -13,9 +13,11 @@ public interface OrderMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "pickUpPoint", source = "pickUpPoint")
+    @Mapping(target = "username", source = "username")
     void copyToEntity(@MappingTarget Order product,
                       RequestOrderDto dto,
-                      PickUpPoint pickUpPoint);
+                      PickUpPoint pickUpPoint,
+                      String username);
 
     ResponseOrderDto fromEntity(Order order);
 }

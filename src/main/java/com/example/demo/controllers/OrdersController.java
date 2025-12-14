@@ -20,11 +20,13 @@ public class OrdersController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ResponseOrderDto> createOrder(@RequestBody RequestOrderDto requestOrderDto) {
-        var order = this.orderService.createOrder(requestOrderDto);
+    public ResponseEntity<ResponseOrderDto> createOrder(@RequestBody RequestOrderDto requestOrderDto, HttpSession session) {
+        if(session.getAttribute("user") instanceof User user) {
+            var order = this.orderService.createOrder(requestOrderDto, user.getUsername());
 
-        if (order.isPresent()) {
-            return ResponseEntity.ok(order.orElseThrow());
+            if (order.isPresent()) {
+                return ResponseEntity.ok(order.orElseThrow());
+            }
         }
 
         return ResponseEntity.badRequest().build();
