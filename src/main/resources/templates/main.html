@@ -3,517 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Товары</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background-color: #f9f9f9;
-        }
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            display: none;            /* по умолчанию скрыта */
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal-window {
-            background: #fff;
-            width: 90%;
-            max-width: 900px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            border-radius: 4px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.4);
-        }
-
-        .modal-header,
-        .modal-footer {
-            padding: 10px 15px;
-            background: #f3f3f3;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body {
-            padding: 10px 15px;
-            overflow-y: auto;
-        }
-
-        .modal-close {
-            border: none;
-            background: transparent;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        /* простая сетка */
-        .row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .col {
-            flex: 1;
-        }
-
-        /* позиция товара */
-        .cart-item {
-            display: flex;
-            border: 1px solid #cce;
-            padding: 8px;
-            margin-bottom: 8px;
-        }
-
-        .item-image img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-        }
-
-        .item-main {
-            flex: 1;
-            padding: 0 10px;
-        }
-
-        .item-side {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: space-between;
-        }
-
-        .discount {
-            font-size: 24px;
-            color: #0a0;
-            font-weight: bold;
-        }
-
-        .prices {
-            margin-top: 5px;
-        }
-
-        .price-new {
-            color: #c00;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-
-        .qty {
-            margin-top: 5px;
-        }
-
-        /* кнопки */
-        .btn-primary,
-        .btn-secondary,
-        .btn-danger {
-            padding: 5px 12px;
-            border: none;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-
-        .btn-primary { background: #2e7d32; color: #fff; }
-        .btn-secondary { background: #ccc; }
-        .btn-danger { background: #c62828; color: #fff; }
-
+        .modal { display: none; }
+        .modal.active { display: flex; }
         .old-price {
             text-decoration: line-through;
             text-decoration-color: red;
             text-decoration-thickness: 2px;
         }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: #f5f5f5;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .top-buttons button {
-            padding: 6px 14px;
-            margin-left: 8px;
-            border-radius: 3px;
-            border: 1px solid #0a8f60;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .btn-primary {
-            background: #0fbf75;
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: #0da864;
-        }
-
-        .btn-secondary {
-            background: #ffffff;
-            color: #0a8f60;
-        }
-
-        .btn-secondary:hover {
-            background: #e8f5e9;
-        }
-
-        .filters {
-            display: flex;
-            gap: 8px;
-            padding: 10px 16px;
-            border-bottom: 1px solid #ddd;
-            background: #fff;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 6px 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-        .select {
-            padding: 6px 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .products-list {
-            padding: 10px 16px;
-        }
-
-        .product-row {
-            display: grid;
-            grid-template-columns: 120px 1fr 120px;
-            gap: 20px;
-            border: 1px solid #000;
-            padding: 15px;
-            margin-bottom: 12px;
-            background: #fff;
-        }
-
-        .product-photo,
-        .product-main,
-        .product-discount {
-            display: flex;
-            align-items: center;
-        }
-
-        .photo-inner {
-            border: 1px solid #000;
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-            min-height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f5f5f5;
-        }
-
-        .photo-inner img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-
-        .product-main {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .product-name {
-            font-weight: 700;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .product-desc,
-        .product-producer,
-        .product-price {
-            margin-bottom: 6px;
-            font-size: 12px;
-        }
-
-        .label {
-            font-weight: 600;
-        }
-
-        .discount-inner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            border: 1px solid #000;
-            padding: 20px 10px;
-            min-height: 100px;
-        }
-
-        .discount-value {
-            margin-top: 6px;
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .product-actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 8px;
-        }
-
-        .btn-action {
-            padding: 4px 10px;
-            font-size: 11px;
-            border: 1px solid #0a8f60;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        .btn-edit {
-            background: #0fbf75;
-            color: white;
-        }
-
-        .btn-delete {
-            background: #ff6b6b;
-            color: white;
-            border-color: #ff6b6b;
-        }
-
-        /* Модальное окно */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: #fff;
-            padding: 0;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 4px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px;
-            border-bottom: 1px solid #ddd;
-            background: #f5f5f5;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #666;
-            padding: 0;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-close:hover {
-            color: #000;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 6px;
-            font-size: 12px;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-        }
-
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            padding: 16px;
-            border-top: 1px solid #ddd;
-            background: #f5f5f5;
-        }
-
-        .btn-modal {
-            padding: 8px 16px;
-            border-radius: 3px;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .btn-modal-save {
-            background: #0fbf75;
-            color: white;
-        }
-
-        .btn-modal-save:hover {
-            background: #0da864;
-        }
-
-        .btn-modal-cancel {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-modal-cancel:hover {
-            background: #d0d0d0;
-        }
-
-        .alert {
-            padding: 12px;
-            margin-bottom: 12px;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-        .alert-info {
-            background: #e3f2fd;
-            color: #1565c0;
-            border-left: 4px solid #1565c0;
-        }
-
-        /* Скрытые элементы в модали для редактирования */
-        .modal-field {
-            display: none;
-        }
-
-        .modal-field.active {
-            display: block;
-        }
-
-        /* Боковая панель корзины */
-        .cart-sidebar {
-            position: fixed;
-            top: 0;
-            right: -400px;
-            width: 400px;
-            height: 100%;
-            background: #fff;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-            z-index: 1001;
-            display: flex;
-            flex-direction: column;
-            transition: right 0.3s ease;
-        }
-
-        .cart-sidebar.active {
-            right: 0;
-        }
-
-        .cart-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 1000;
-            display: none;
-        }
-
-        .cart-overlay.active {
-            display: block;
-        }
     </style>
 </head>
-<body>
-<div class="top-bar">
-    <div class="user-name" th:text="${userName}">Майя</div>
-
-    <div class="top-buttons">
-        <button type="button" id="openCartBtn">
-            Открыть корзину
+<body class="font-sans bg-gray-100">
+<!-- Top Bar -->
+<div class="flex justify-between items-center px-4 py-3 bg-gray-100 border-b border-gray-300">
+    <div class="font-semibold text-sm" th:text="${userName}">Майя</div>
+    <div class="flex gap-2">
+        <button type="button" id="openCartBtn" class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-white text-emerald-600 hover:bg-emerald-50 cursor-pointer">
+            🛒 Корзина
         </button>
-        <button class="btn-primary" type="button" onclick="openAddModal()">Товары</button>
-        <button class="btn-secondary" onclick="history.back()">Назад</button>
+        <button class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" type="button" onclick="openAddModal()">+ Товар</button>
+        <button class="px-3 py-1.5 text-xs rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 cursor-pointer" onclick="history.back()">Назад</button>
     </div>
 </div>
 
-<div class="filters">
-    <form th:action="@{/}" method="get" id="searchForm" style="display: flex; gap: 8px; width: 100%;">
+<!-- Filters -->
+<div class="flex gap-2 px-4 py-2.5 bg-white border-b border-gray-300">
+    <form th:action="@{/}" method="get" id="searchForm" class="flex gap-2 w-full">
         <input type="text"
                name="search"
                id="searchInput"
-               class="search-input"
+               class="flex-1 px-2.5 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
                th:value="${param.search != null ? param.search[0] : ''}"
                placeholder="Поиск...">
 
-        <select name="sort" class="select" id="sortSelect" th:value="${param.sort != null ? param.sort[0] : ''}">
+        <select name="sort" id="sortSelect" th:value="${param.sort != null ? param.sort[0] : ''}"
+                class="px-2.5 py-1.5 text-xs border border-gray-300 rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500">
             <option value="">сортировка</option>
             <option value="titleAsc">По названию (А‑Я)</option>
             <option value="titleDesc">По названию (Я‑А)</option>
@@ -523,286 +48,241 @@
     </form>
 </div>
 
-<div class="products-list">
-    <div class="product-row" th:each="product : ${products}" th:data-product-id="${product.id}">
+<!-- Products List -->
+<div class="p-4 space-y-3">
+    <div class="grid grid-cols-[120px_1fr_120px] gap-5 border border-gray-800 p-4 bg-white rounded" th:each="product : ${products}" th:data-product-id="${product.id}">
         <!-- Фото -->
-        <div class="product-photo">
-            <div class="photo-inner">
+        <div class="flex items-center">
+            <div class="border border-gray-800 p-5 w-full min-h-[100px] flex items-center justify-center bg-gray-100">
                 <img th:if="${product.photo != null}"
-                     th:src="${@imageHelper.convertImageBytesToBase64(product.photo)}">
+                     th:src="${@imageHelper.convertImageBytesToBase64(product.photo)}"
+                     alt="Фото товара"
+                     class="max-w-full max-h-full">
                 <img th:if="${product.photo == null}"
-                     th:src="@{/picture.png}">
+                     th:src="@{/picture.png}"
+                     alt="Нет фото"
+                     class="max-w-full max-h-full">
             </div>
         </div>
 
         <!-- Основная информация -->
-        <div class="product-main">
-            <div class="product-name" th:text="${product.title}">Наименование товара</div>
-            <div class="product-desc">
-                <span class="label">Описание: </span>
+        <div class="flex flex-col justify-center">
+            <div class="font-bold mb-2 text-sm" th:text="${product.title}">Наименование товара</div>
+            <div class="mb-1.5 text-xs">
+                <span class="font-semibold">Описание: </span>
                 <span th:text="${product.description}">Краткое описание</span>
             </div>
-            <div class="product-producer">
-                <span class="label">Производитель: </span>
+            <div class="mb-1.5 text-xs">
+                <span class="font-semibold">Производитель: </span>
                 <span th:text="${product.manufacturer.title}">Производитель</span>
             </div>
-            <div class="product-price">
-                <span class="label">Цена: </span>
+            <div class="mb-1.5 text-xs">
+                <span class="font-semibold">Цена: </span>
                 <span th:classappend="${product.discountAmount > 15} ? 'old-price'" th:text="${#numbers.formatDecimal(product.cost, 1, 2, 'DEFAULT')}">0.00</span>
-                <span th:if="${product.discountAmount > 15}" th:text="' → ' + ${#numbers.formatDecimal(product.cost * (100 - product.discountAmount) / 100, 1, 2, 'DEFAULT')}"></span>
+                <span class="text-red-600 font-bold ml-2" th:if="${product.discountAmount > 15}" th:text="' → ' + ${#numbers.formatDecimal(product.cost * (100 - product.discountAmount) / 100, 1, 2, 'DEFAULT')}"></span>
             </div>
-            <div class="product-actions">
-
-            </div>                <button class="action-btn btn-edit"
-                                          type="button"
-                                          th:attr="
-           data-id=${product.id},
-           data-title=${product.title},
-           data-description=${product.description},
-           data-category=${product.category.id},
-           data-cost=${product.cost},
-           data-quantityInStock=${product.quantityInStock},
-           data-unittype=${product.unitType.id},
-           data-cost=${product.manufacturer.id},
-           data-supplier=${product.supplier.id},
-           data-discount=${product.discountAmount},
-           data-max-discount-amount=${product.maxDiscountAmount}"
-                                          onclick="openEditModal(this)">
-            Изменить
-        </button>
-            <button
-                    class="delete-btn"
-                    th:data-id="${product.id}">
-                Удалить
-            </button>
-            <button
-                    class="btn-action btn-edit add-to-cart-btn"
-                    type="button"
-                    th:data-id="${product.id}"
-                    th:data-title="${product.title}"
-                    th:data-cost="${product.cost}"
-                    th:data-discount="${product.discountAmount}"
-                    onclick="addToCart(this)">
-                В корзину
-            </button>
+            <div class="flex gap-1.5 mt-2">
+                <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
+                        type="button"
+                        th:attr="
+                            data-id=${product.id},
+                            data-title=${product.title},
+                            data-description=${product.description},
+                            data-category=${product.category.id},
+                            data-cost=${product.cost},
+                            data-quantityInStock=${product.quantityInStock},
+                            data-unittype=${product.unitType.id},
+                            data-manufacturer=${product.manufacturer.id},
+                            data-supplier=${product.supplier.id},
+                            data-discount=${product.discountAmount},
+                            data-max-discount-amount=${product.maxDiscountAmount}"
+                        onclick="openEditModal(this)">
+                    Изменить
+                </button>
+                <button class="px-2.5 py-1 text-[11px] rounded border border-red-500 bg-red-500 text-white hover:bg-red-600 cursor-pointer delete-btn"
+                        th:data-id="${product.id}">
+                    Удалить
+                </button>
+                <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
+                        type="button"
+                        th:data-id="${product.id}"
+                        th:data-title="${product.title}"
+                        th:data-cost="${product.cost}"
+                        th:data-discount="${product.discountAmount}"
+                        onclick="addToCart(this)">
+                    🛒 В корзину
+                </button>
+            </div>
         </div>
 
         <!-- Размер скидки -->
-        <div class="product-discount">
-            <div class="discount-inner">
-                <span class="label">Размер</span>
-                <span class="label">скидки</span>
-                <span class="discount-value" th:text="${product.discountAmount + '%'}">0%</span>
+        <div class="flex items-center">
+            <div class="flex flex-col items-center justify-center w-full border border-gray-800 py-5 px-2.5 min-h-[100px]">
+                <span class="font-semibold text-xs">Размер</span>
+                <span class="font-semibold text-xs">скидки</span>
+                <span class="mt-1.5 text-xl font-bold" th:classappend="${product.discountAmount > 15} ? 'text-green-600' : ''" th:text="${product.discountAmount + '%'}">0%</span>
             </div>
         </div>
     </div>
 </div>
 
 <!-- МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Изменить данные</h2>
-            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+<div id="editModal" class="modal fixed inset-0 z-50 bg-black/50 items-center justify-center">
+    <div class="bg-white w-[90%] max-w-xl rounded shadow-xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
+            <h2 class="text-base font-semibold">Изменить данные</h2>
+            <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeEditModal()">&times;</button>
         </div>
-        <div class="modal-body">
-            <div class="alert alert-info">Данные обновлены успешно</div>
-            <form id="editForm" th:action="@{/products/update/}" method="post">
-                <div class="form-group">
-                    <label for="editTitle">Наименование</label>
-                    <input type="text" class="form-input" id="editTitle" name="title">
+        <div class="p-5">
+            <form id="editForm" th:action="@{/products/update/}" method="post" class="space-y-4">
+                <div>
+                    <label for="editTitle" class="block text-xs font-semibold mb-1.5">Наименование</label>
+                    <input type="text" id="editTitle" name="title" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-                <div class="form-group">
-                    <label for="editDescription">Описание</label>
-                    <textarea class="form-textarea" id="editDescription" name="description"></textarea>
+                <div>
+                    <label for="editDescription" class="block text-xs font-semibold mb-1.5">Описание</label>
+                    <textarea id="editDescription" name="description" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
                 </div>
-
-                <div class="form-group">
-                    <label for="editCategory">Категория товара</label>
-                    <select id="editCategory" name="categoryId">
-                        <option th:each="c : ${categories}"
-                                th:value="${c.id}"
-                                th:text="${c.title}">
-                        </option>
+                <div>
+                    <label for="editCategory" class="block text-xs font-semibold mb-1.5">Категория товара</label>
+                    <select id="editCategory" name="categoryId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="editCost">Стоимость за единицу</label>
-                    <input type="number" id="editCost" name="cost" step="0.01" required>
+                <div>
+                    <label for="editCost" class="block text-xs font-semibold mb-1.5">Стоимость за единицу</label>
+                    <input type="number" id="editCost" name="cost" step="0.01" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-                <div class="form-group">
-                    <label for="editQuantity">Количество на складе</label>
-                    <input type="number" id="editQuantity" name="quantity" value="1">
+                <div>
+                    <label for="editQuantity" class="block text-xs font-semibold mb-1.5">Количество на складе</label>
+                    <input type="number" id="editQuantity" name="quantity" value="1" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-                <div class="form-group">
-                    <label for="editUnit">Единицы измерения</label>
-                    <select id="editUnit" name="unitTypeId">
-                        <option th:each="u : ${unittypes}"
-                                th:value="${u.id}"
-                                th:text="${u.title}">
-                        </option>
+                <div>
+                    <label for="editUnit" class="block text-xs font-semibold mb-1.5">Единицы измерения</label>
+                    <select id="editUnit" name="unitTypeId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="u : ${unittypes}" th:value="${u.id}" th:text="${u.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="editManufacturer">Производитель</label>
-                    <select id="editManufacturer" name="manufacturerId">
-                        <option th:each="m : ${manufacturers}"
-                                th:value="${m.id}"
-                                th:text="${m.title}">
-                        </option>
+                <div>
+                    <label for="editManufacturer" class="block text-xs font-semibold mb-1.5">Производитель</label>
+                    <select id="editManufacturer" name="manufacturerId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="editSupplier">Поставщик</label>
-                    <select id="editSupplier" name="supplierId">
-                        <option th:each="s : ${suppliers}"
-                                th:value="${s.id}"
-                                th:text="${s.title}">
-                        </option>
+                <div>
+                    <label for="editSupplier" class="block text-xs font-semibold mb-1.5">Поставщик</label>
+                    <select id="editSupplier" name="supplierId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="editMaxDiscount">Размер максимальной скидки</label>
-                    <input type="number" id="editMaxDiscount" name="maxDiscountAmount" min="0" max="100" required>
+                <div>
+                    <label for="editMaxDiscount" class="block text-xs font-semibold mb-1.5">Размер максимальной скидки</label>
+                    <input type="number" id="editMaxDiscount" name="maxDiscountAmount" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-                <div class="form-group">
-                    <label for="editCurrentDiscount">Размер действующей скидки</label>
-                    <input type="number" id="editCurrentDiscount" name="discountAmount" min="0" max="100" required>
+                <div>
+                    <label for="editCurrentDiscount" class="block text-xs font-semibold mb-1.5">Размер действующей скидки</label>
+                    <input type="number" id="editCurrentDiscount" name="discountAmount" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
             </form>
         </div>
-        <div class="modal-footer">
-            <button class="btn-modal btn-modal-cancel" onclick="closeEditModal()">Отмена</button>
-            <button class="btn-modal btn-modal-save" type="button" onclick="submitEditForm()">Сохранить</button>
+        <div class="flex gap-2 justify-end px-4 py-3 border-t bg-gray-100">
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="closeEditModal()">Отмена</button>
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" type="button" onclick="submitEditForm()">Сохранить</button>
         </div>
     </div>
 </div>
 
 <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ТОВАРА -->
-<div id="addModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Добавить товар</h2>
-            <button class="modal-close" onclick="closeAddModal()">&times;</button>
+<div id="addModal" class="modal fixed inset-0 z-50 bg-black/50 items-center justify-center">
+    <div class="bg-white w-[90%] max-w-xl rounded shadow-xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
+            <h2 class="text-base font-semibold">Добавить товар</h2>
+            <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeAddModal()">&times;</button>
         </div>
-        <div class="modal-body">
-            <div class="alert alert-info">Данные обновлены успешно</div>
-            <form id="addForm" th:action="@{/products/create}" method="post">
-                <div class="form-group">
-                    <label for="addTitle">Наименование</label>
-                    <input type="text" class="form-input" id="addTitle" name="title">
+        <div class="p-5">
+            <form id="addForm" th:action="@{/products/create}" method="post" class="space-y-4">
+                <div>
+                    <label for="addTitle" class="block text-xs font-semibold mb-1.5">Наименование</label>
+                    <input type="text" id="addTitle" name="title" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-
-                <div class="form-group">
-                    <label for="addDescription">Описание</label>
-                    <textarea class="form-textarea" id="addDescription" name="description"></textarea>
+                <div>
+                    <label for="addDescription" class="block text-xs font-semibold mb-1.5">Описание</label>
+                    <textarea id="addDescription" name="description" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
                 </div>
-
-                <div class="form-group">
-                    <label for="addCategory">Категория товара</label>
-                    <select id="addCategory" name="categoryId">
-                        <option th:each="c : ${categories}"
-                                th:value="${c.id}"
-                                th:text="${c.title}">
-                        </option>
+                <div>
+                    <label for="addCategory" class="block text-xs font-semibold mb-1.5">Категория товара</label>
+                    <select id="addCategory" name="categoryId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="addCost">Стоимость за единицу</label>
-                    <input type="number" id="addCost" name="cost" step="0.01" required>
+                <div>
+                    <label for="addCost" class="block text-xs font-semibold mb-1.5">Стоимость за единицу</label>
+                    <input type="number" id="addCost" name="cost" step="0.01" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-                <div class="form-group">
-                    <label for="addQuantity">Количество на складе</label>
-                    <input type="number" id="addQuantity" name="quantity" value="1">
+                <div>
+                    <label for="addQuantity" class="block text-xs font-semibold mb-1.5">Количество на складе</label>
+                    <input type="number" id="addQuantity" name="quantity" value="1" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-                <div class="form-group">
-                    <label for="addUnit">Единицы измерения</label>
-                    <select id="addUnit" name="unitTypeId">
-                        <option th:each="u : ${unittypes}"
-                                th:value="${u.id}"
-                                th:text="${u.title}">
-                        </option>
+                <div>
+                    <label for="addUnit" class="block text-xs font-semibold mb-1.5">Единицы измерения</label>
+                    <select id="addUnit" name="unitTypeId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="u : ${unittypes}" th:value="${u.id}" th:text="${u.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="addManufacturer">Производитель</label>
-                    <select id="addManufacturer" name="manufacturerId">
-                        <option th:each="m : ${manufacturers}"
-                                th:value="${m.id}"
-                                th:text="${m.title}">
-                        </option>
+                <div>
+                    <label for="addManufacturer" class="block text-xs font-semibold mb-1.5">Производитель</label>
+                    <select id="addManufacturer" name="manufacturerId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="m : ${manufacturers}" th:value="${m.id}" th:text="${m.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="addSupplier">Поставщик</label>
-                    <select id="addSupplier" name="supplierId">
-                        <option th:each="s : ${suppliers}"
-                                th:value="${s.id}"
-                                th:text="${s.title}">
-                        </option>
+                <div>
+                    <label for="addSupplier" class="block text-xs font-semibold mb-1.5">Поставщик</label>
+                    <select id="addSupplier" name="supplierId" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.title}"></option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label for="addMaxDiscount">Размер максимальной скидки</label>
-                    <input type="number" id="addMaxDiscount" name="maxDiscountAmount" value="20" min="0" max="100" required>
+                <div>
+                    <label for="addMaxDiscount" class="block text-xs font-semibold mb-1.5">Размер максимальной скидки</label>
+                    <input type="number" id="addMaxDiscount" name="maxDiscountAmount" value="20" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
-
-                <div class="form-group">
-                    <label for="addCurrentDiscount">Размер действующей скидки</label>
-                    <input type="number" id="addCurrentDiscount" name="discountAmount" min="0" max="100" required>
+                <div>
+                    <label for="addCurrentDiscount" class="block text-xs font-semibold mb-1.5">Размер действующей скидки</label>
+                    <input type="number" id="addCurrentDiscount" name="discountAmount" min="0" max="100" required class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
             </form>
         </div>
-        <div class="modal-footer">
-            <button class="btn-modal btn-modal-cancel" onclick="closeAddModal()">Отмена</button>
-            <button class="btn-modal btn-modal-save" type="button" onclick="submitAddForm()">Добавить</button>
+        <div class="flex gap-2 justify-end px-4 py-3 border-t bg-gray-100">
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="closeAddModal()">Отмена</button>
+            <button class="px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" type="button" onclick="submitAddForm()">Добавить</button>
         </div>
     </div>
 </div>
 
 <!-- БОКОВОЕ МЕНЮ КОРЗИНЫ -->
-<div id="cartSidebar" class="cart-sidebar">
-    <div class="modal-header">
-        <h2>Корзина</h2>
-        <button class="modal-close" onclick="closeCartModal()">&times;</button>
+<div id="cartOverlay" class="fixed inset-0 z-40 bg-black/50 hidden" onclick="closeCartModal()"></div>
+<div id="cartSidebar" class="fixed top-0 right-0 z-50 h-full w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <div class="flex justify-between items-center px-4 py-3 border-b bg-gray-100">
+        <h2 class="text-base font-semibold">🛒 Корзина</h2>
+        <button class="text-xl text-gray-500 hover:text-black w-7 h-7 flex items-center justify-center" onclick="closeCartModal()">&times;</button>
     </div>
-    <div class="modal-body" id="cartBody">
-        <div id="cartEmpty" class="alert alert-info">Корзина пуста</div>
+    <div class="flex-1 overflow-y-auto p-5" id="cartBody">
+        <div id="cartEmpty" class="p-3 mb-3 rounded bg-blue-50 text-blue-700 border-l-4 border-blue-500 text-xs">Корзина пуста</div>
         <div id="cartItems"></div>
-        <div class="form-group" id="pickUpPointGroup" style="display: none;">
-            <label for="pickUpPointSelect">Пункт выдачи</label>
-            <select id="pickUpPointSelect" class="select" style="width: 100%;">
-                <option th:each="p : ${pickuppoints}"
-                        th:value="${p.id}"
-                        th:text="${p.address}">
-                </option>
+        <div id="pickUpPointGroup" class="hidden mt-4">
+            <label for="pickUpPointSelect" class="block text-xs font-semibold mb-1.5">Пункт выдачи</label>
+            <select id="pickUpPointSelect" class="w-full px-2 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option th:each="p : ${pickuppoints}" th:value="${p.id}" th:text="${p.address}"></option>
             </select>
         </div>
     </div>
-    <div class="modal-footer" style="flex-direction: column; gap: 10px;">
-        <div id="cartTotal" style="font-weight: bold; font-size: 14px; width: 100%;">Итого: 0.00 ₽</div>
-        <div style="display: flex; gap: 10px; width: 100%;">
-            <button class="btn-modal btn-modal-cancel" onclick="clearCartItems()">Очистить</button>
-            <button class="btn-modal btn-modal-save" onclick="createOrder()">Оформить заказ</button>
+    <div class="flex flex-col gap-2.5 px-4 py-3 border-t bg-gray-100">
+        <div id="cartTotal" class="font-bold text-sm w-full">Итого: 0.00 ₽</div>
+        <div class="flex gap-2.5 w-full">
+            <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300" onclick="clearCartItems()">Очистить</button>
+            <button class="flex-1 px-4 py-2 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600" onclick="createOrder()">Оформить заказ</button>
         </div>
     </div>
 </div>
-<div id="cartOverlay" class="cart-overlay" onclick="closeCartModal()"></div>
 
 <script>
     function openEditModal(button) {
@@ -977,15 +457,15 @@
 
     // Открыть боковое меню корзины
     function openCartModal() {
-        document.getElementById('cartSidebar').classList.add('active');
-        document.getElementById('cartOverlay').classList.add('active');
+        document.getElementById('cartOverlay').classList.remove('hidden');
+        document.getElementById('cartSidebar').classList.remove('translate-x-full');
         renderCart();
     }
 
     // Закрыть боковое меню корзины
     function closeCartModal() {
-        document.getElementById('cartSidebar').classList.remove('active');
-        document.getElementById('cartOverlay').classList.remove('active');
+        document.getElementById('cartOverlay').classList.add('hidden');
+        document.getElementById('cartSidebar').classList.add('translate-x-full');
     }
 
     // Добавить товар в корзину
@@ -1031,14 +511,14 @@
 
         if (cart.length === 0) {
             cartItems.innerHTML = '';
-            cartEmpty.style.display = 'block';
-            pickUpPointGroup.style.display = 'none';
+            cartEmpty.classList.remove('hidden');
+            pickUpPointGroup.classList.add('hidden');
             cartTotal.textContent = 'Итого: 0.00 ₽';
             return;
         }
 
-        cartEmpty.style.display = 'none';
-        pickUpPointGroup.style.display = 'block';
+        cartEmpty.classList.add('hidden');
+        pickUpPointGroup.classList.remove('hidden');
 
         let html = '';
         let total = 0;
@@ -1048,26 +528,26 @@
             total += itemTotal;
 
             html += `
-                <div class="cart-item">
-                    <div class="item-main">
-                        <div style="font-weight: 600; margin-bottom: 4px;">${item.title}</div>
-                        <div class="prices">
+                <div class="flex justify-between items-center border border-gray-200 rounded p-3 mb-2 bg-gray-50">
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm mb-1">${item.title}</div>
+                        <div class="text-xs text-gray-600">
                             ${item.discount > 15
                                 ? `<span class="old-price">${item.cost.toFixed(2)} ₽</span>
-                                   <span class="price-new">${item.finalCost.toFixed(2)} ₽</span>
-                                   <span class="discount">-${item.discount}%</span>`
+                                   <span class="text-red-600 font-bold ml-2">${item.finalCost.toFixed(2)} ₽</span>
+                                   <span class="text-green-600 ml-1">-${item.discount}%</span>`
                                 : `<span>${item.cost.toFixed(2)} ₽</span>`
                             }
                         </div>
                     </div>
-                    <div class="item-side">
-                        <div class="qty">
-                            <button class="btn-secondary" onclick="changeQuantity(${index}, -1)">-</button>
-                            <span style="min-width: 30px; text-align: center; display: inline-block;">${item.quantity}</span>
-                            <button class="btn-secondary" onclick="changeQuantity(${index}, 1)">+</button>
+                    <div class="flex flex-col items-end gap-1">
+                        <div class="flex items-center gap-1">
+                            <button class="w-6 h-6 text-xs rounded bg-gray-200 hover:bg-gray-300" onclick="changeQuantity(${index}, -1)">−</button>
+                            <span class="min-w-[30px] text-center text-sm">${item.quantity}</span>
+                            <button class="w-6 h-6 text-xs rounded bg-gray-200 hover:bg-gray-300" onclick="changeQuantity(${index}, 1)">+</button>
                         </div>
-                        <div style="font-weight: bold;">${itemTotal.toFixed(2)} ₽</div>
-                        <button class="btn-danger" onclick="removeFromCart(${index})">✕</button>
+                        <div class="font-bold text-sm">${itemTotal.toFixed(2)} ₽</div>
+                        <button class="text-red-500 hover:text-red-700 text-xs" onclick="removeFromCart(${index})">✕ Удалить</button>
                     </div>
                 </div>
             `;
@@ -1117,7 +597,7 @@
             return;
         }
 
-        // Формируем данные для заказа
+        // Формируем данные для заказа согласно RequestOrderDto
         const productIdCountCollection = cart.map(item => ({
             productId: item.id,
             count: item.quantity
