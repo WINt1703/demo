@@ -20,7 +20,6 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role_id")
     private Role role;
 
     public String getUsername() {

@@ -22,7 +22,7 @@
         <button type="button" id="openCartBtn" class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-white text-emerald-600 hover:bg-emerald-50 cursor-pointer">
             🛒 Корзина
         </button>
-        <button class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" type="button" onclick="openAddModal()">+ Товар</button>
+        <button th:if="${userRole.name() != 'USER'}" class="px-3 py-1.5 text-xs rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer" type="button" onclick="openAddModal()">+ Товар</button>
         <button class="px-3 py-1.5 text-xs rounded border border-gray-300 bg-white text-gray-600 hover:bg-gray-100 cursor-pointer" onclick="history.back()">Назад</button>
     </div>
 </div>
@@ -82,7 +82,7 @@
                 <span class="text-red-600 font-bold ml-2" th:if="${product.discountAmount > 15}" th:text="' → ' + ${#numbers.formatDecimal(product.cost * (100 - product.discountAmount) / 100, 1, 2, 'DEFAULT')}"></span>
             </div>
             <div class="flex gap-1.5 mt-2">
-                <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
+                <button th:if="${userRole.name() != 'USER'}" class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
                         type="button"
                         th:attr="
                             data-id=${product.id},
@@ -99,7 +99,7 @@
                         onclick="openEditModal(this)">
                     Изменить
                 </button>
-                <button class="px-2.5 py-1 text-[11px] rounded border border-red-500 bg-red-500 text-white hover:bg-red-600 cursor-pointer delete-btn"
+                <button th:if="${userRole.name() != 'USER'}" class="px-2.5 py-1 text-[11px] rounded border border-red-500 bg-red-500 text-white hover:bg-red-600 cursor-pointer delete-btn"
                         th:data-id="${product.id}">
                     Удалить
                 </button>
@@ -285,6 +285,9 @@
 </div>
 
 <script>
+    // Получаем роль пользователя из Thymeleaf
+    const userRole = /*[[${userRole.name()}]]*/ 'USER';
+
     function openEditModal(button) {
         const p = button.dataset; // p.id, p.title, ...
 
@@ -397,6 +400,31 @@
 
         const manufacturerName = data.manufacturer?.title || getManufacturerName(data.manufacturerId) || '';
 
+        // Кнопки управления в зависимости от роли
+        const editButton = userRole !== 'USER' ? `
+            <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
+                    type="button"
+                    data-id="${data.id}"
+                    data-title="${data.title}"
+                    data-description="${data.description || ''}"
+                    data-category="${data.category?.id || data.categoryId || ''}"
+                    data-cost="${data.cost}"
+                    data-quantityinstock="${data.quantityInStock}"
+                    data-unittype="${data.unitType?.id || data.unitTypeId || ''}"
+                    data-manufacturer="${data.manufacturer?.id || data.manufacturerId || ''}"
+                    data-supplier="${data.supplier?.id || data.supplierId || ''}"
+                    data-discount="${data.discountAmount}"
+                    data-max-discount-amount="${data.maxDiscountAmount}"
+                    onclick="openEditModal(this)">
+                Изменить
+            </button>` : '';
+
+        const deleteButton = userRole !== 'USER' ? `
+            <button class="px-2.5 py-1 text-[11px] rounded border border-red-500 bg-red-500 text-white hover:bg-red-600 cursor-pointer delete-btn"
+                    data-id="${data.id}">
+                Удалить
+            </button>` : '';
+
         return `
             <div class="grid grid-cols-[120px_1fr_120px] gap-5 border border-gray-800 p-4 bg-white rounded" data-product-id="${data.id}">
                 <!-- Фото -->
@@ -422,26 +450,8 @@
                         ${priceHTML}
                     </div>
                     <div class="flex gap-1.5 mt-2">
-                        <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
-                                type="button"
-                                data-id="${data.id}"
-                                data-title="${data.title}"
-                                data-description="${data.description || ''}"
-                                data-category="${data.category?.id || data.categoryId || ''}"
-                                data-cost="${data.cost}"
-                                data-quantityinstock="${data.quantityInStock}"
-                                data-unittype="${data.unitType?.id || data.unitTypeId || ''}"
-                                data-manufacturer="${data.manufacturer?.id || data.manufacturerId || ''}"
-                                data-supplier="${data.supplier?.id || data.supplierId || ''}"
-                                data-discount="${data.discountAmount}"
-                                data-max-discount-amount="${data.maxDiscountAmount}"
-                                onclick="openEditModal(this)">
-                            Изменить
-                        </button>
-                        <button class="px-2.5 py-1 text-[11px] rounded border border-red-500 bg-red-500 text-white hover:bg-red-600 cursor-pointer delete-btn"
-                                data-id="${data.id}">
-                            Удалить
-                        </button>
+                        ${editButton}
+                        ${deleteButton}
                         <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
                                 type="button"
                                 data-id="${data.id}"

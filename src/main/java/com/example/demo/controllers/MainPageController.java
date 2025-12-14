@@ -26,6 +26,7 @@ public class MainPageController {
 
             model.addAttribute("products", modelData.products());
             model.addAttribute("userName", user.getUsername());
+            model.addAttribute("userRole", user.getRole());
             model.addAttribute("suppliers", modelData.suppliers());
             model.addAttribute("categories", modelData.categories());
             model.addAttribute("unittypes", modelData.unitTypes());
