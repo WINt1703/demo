@@ -12,9 +12,6 @@ public class Manufacturer {
 
     private String title;
 
-    @OneToMany(mappedBy = "manufacturer")
-    private List<Product> products;
-
     public long getId() {
         return this.id;
     }
