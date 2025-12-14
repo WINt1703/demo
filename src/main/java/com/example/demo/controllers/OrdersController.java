@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders")
 public class OrdersController {
@@ -28,16 +30,16 @@ public class OrdersController {
         return ResponseEntity.badRequest().build();
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<ResponseOrderDto> getOrderById(@PathVariable long id, HttpSession session) {
+    @GetMapping("my")
+    public ResponseEntity<List<ResponseOrderDto>> getUserOrders(HttpSession session) {
         if(session.getAttribute("user") instanceof User user) {
-            var order = this.orderService.getOrderByIdAndUsername(id, user.getUsername());
 
-            if (order.isPresent()) {
-                return ResponseEntity.ok(order.orElseThrow());
+            var orders = this.orderService.getUserOrders(user.getUsername());
+            if (orders.isPresent()) {
+                return ResponseEntity.ok(orders.orElseThrow());
             }
         }
 
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.internalServerError().build();
     }
 }

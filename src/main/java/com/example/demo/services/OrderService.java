@@ -12,7 +12,10 @@ import com.example.demo.repositories.PickUpPointRepository;
 import com.example.demo.repositories.ProductRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -61,11 +64,11 @@ public class OrderService {
         return Optional.empty();
     }
 
-    public Optional<ResponseOrderDto> getOrderByIdAndUsername(long orderId, String username) {
-        var order = this.orderRepository.findByIdAndUsername(orderId, username);
+    public Optional<List<ResponseOrderDto>> getUserOrders(String username) {
+        var orders = this.orderRepository.findAllByUsername(username);
 
-        if (order.isPresent()) {
-            return Optional.of(orderMapper.fromEntity(order.orElseThrow()));
+        if (orders.isPresent()) {
+            return Optional.of(orders.orElseThrow().stream().map(this.orderMapper::fromEntity).toList());
         }
 
         return Optional.empty();
