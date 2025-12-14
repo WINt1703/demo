@@ -335,14 +335,21 @@
                 body: formData
             }).then(resp => {
                 if (resp.ok) {
-                    alert("Успешно изменено");
-                    document.getElementById('editModal').classList.remove('active');
+                    return resp.json();
                 } else {
                     alert('Ошибка при обновлении: ' + resp.status);
+                    throw new Error('Update failed');
                 }
+            }).then(product => {
+                // Обновляем карточку товара в DOM
+                updateProductCardInDOM(product);
+                alert("Успешно изменено");
+                document.getElementById('editModal').classList.remove('active');
             }).catch(err => {
                 console.error(err);
-                alert('Не удалось отправить данные');
+                if (err.message !== 'Update failed') {
+                    alert('Не удалось отправить данные');
+                }
             });
         });
     }
@@ -351,6 +358,129 @@
     function submitEditForm() {
         if (editForm) {
             editForm.requestSubmit();
+        }
+    }
+
+    // Функция для получения текста из справочников по ID
+    function getCategoryName(id) {
+        const select = document.getElementById('editCategory');
+        const option = select?.querySelector(`option[value="${id}"]`);
+        return option ? option.textContent : '';
+    }
+
+    function getManufacturerName(id) {
+        const select = document.getElementById('editManufacturer');
+        const option = select?.querySelector(`option[value="${id}"]`);
+        return option ? option.textContent : '';
+    }
+
+    function getUnitTypeName(id) {
+        const select = document.getElementById('editUnit');
+        const option = select?.querySelector(`option[value="${id}"]`);
+        return option ? option.textContent : '';
+    }
+
+    function getSupplierName(id) {
+        const select = document.getElementById('editSupplier');
+        const option = select?.querySelector(`option[value="${id}"]`);
+        return option ? option.textContent : '';
+    }
+
+    // Функция для создания HTML карточки товара
+    function createProductCardHTML(data) {
+        const hasDiscount = data.discountAmount > 15;
+        const finalPrice = hasDiscount ? data.cost * (100 - data.discountAmount) / 100 : data.cost;
+        const priceHTML = hasDiscount
+            ? `<span class="old-price">${data.cost.toFixed(2)}</span>
+               <span class="text-red-600 font-bold ml-2"> → ${finalPrice.toFixed(2)}</span>`
+            : `<span>${data.cost.toFixed(2)}</span>`;
+
+        const manufacturerName = data.manufacturer?.title || getManufacturerName(data.manufacturerId) || '';
+
+        return `
+            <div class="grid grid-cols-[120px_1fr_120px] gap-5 border border-gray-800 p-4 bg-white rounded" data-product-id="${data.id}">
+                <!-- Фото -->
+                <div class="flex items-center">
+                    <div class="border border-gray-800 p-5 w-full min-h-[100px] flex items-center justify-center bg-gray-100">
+                        <img src="/picture.png" alt="Нет фото" class="max-w-full max-h-full">
+                    </div>
+                </div>
+
+                <!-- Основная информация -->
+                <div class="flex flex-col justify-center">
+                    <div class="font-bold mb-2 text-sm">${data.title}</div>
+                    <div class="mb-1.5 text-xs">
+                        <span class="font-semibold">Описание: </span>
+                        <span>${data.description || ''}</span>
+                    </div>
+                    <div class="mb-1.5 text-xs">
+                        <span class="font-semibold">Производитель: </span>
+                        <span>${manufacturerName}</span>
+                    </div>
+                    <div class="mb-1.5 text-xs">
+                        <span class="font-semibold">Цена: </span>
+                        ${priceHTML}
+                    </div>
+                    <div class="flex gap-1.5 mt-2">
+                        <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
+                                type="button"
+                                data-id="${data.id}"
+                                data-title="${data.title}"
+                                data-description="${data.description || ''}"
+                                data-category="${data.category?.id || data.categoryId || ''}"
+                                data-cost="${data.cost}"
+                                data-quantityinstock="${data.quantityInStock}"
+                                data-unittype="${data.unitType?.id || data.unitTypeId || ''}"
+                                data-manufacturer="${data.manufacturer?.id || data.manufacturerId || ''}"
+                                data-supplier="${data.supplier?.id || data.supplierId || ''}"
+                                data-discount="${data.discountAmount}"
+                                data-max-discount-amount="${data.maxDiscountAmount}"
+                                onclick="openEditModal(this)">
+                            Изменить
+                        </button>
+                        <button class="px-2.5 py-1 text-[11px] rounded border border-red-500 bg-red-500 text-white hover:bg-red-600 cursor-pointer delete-btn"
+                                data-id="${data.id}">
+                            Удалить
+                        </button>
+                        <button class="px-2.5 py-1 text-[11px] rounded border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
+                                type="button"
+                                data-id="${data.id}"
+                                data-title="${data.title}"
+                                data-cost="${data.cost}"
+                                data-discount="${data.discountAmount}"
+                                onclick="addToCart(this)">
+                            🛒 В корзину
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Размер скидки -->
+                <div class="flex items-center">
+                    <div class="flex flex-col items-center justify-center w-full border border-gray-800 py-5 px-2.5 min-h-[100px]">
+                        <span class="font-semibold text-xs">Размер</span>
+                        <span class="font-semibold text-xs">скидки</span>
+                        <span class="mt-1.5 text-xl font-bold ${hasDiscount ? 'text-green-600' : ''}">${data.discountAmount}%</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Функция для добавления нового товара в DOM
+    function addProductCardToDOM(data) {
+        const productsContainer = document.querySelector('.p-4.space-y-3');
+        if (productsContainer) {
+            const cardHTML = createProductCardHTML(data);
+            productsContainer.insertAdjacentHTML('beforeend', cardHTML);
+        }
+    }
+
+    // Функция для обновления существующей карточки товара в DOM
+    function updateProductCardInDOM(data) {
+        const existingCard = document.querySelector(`[data-product-id="${data.id}"]`);
+        if (existingCard) {
+            const cardHTML = createProductCardHTML(data);
+            existingCard.outerHTML = cardHTML;
         }
     }
 
@@ -368,24 +498,29 @@
             const formData = new URLSearchParams(new FormData(addForm));
 
             fetch(url, {
-                method: 'POST', // или this.method, если в форме стоит method="post"
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
                 },
                 body: formData
             }).then(resp => {
                 if (resp.ok) {
-                    // показываем сообщение об успехе
-                    alert("Успешно добавленно");
-                    // можно закрыть модалку или очистить форму
-                    addForm.reset();
-                    document.getElementById('addModal').classList.remove('active');
+                    return resp.json();
                 } else {
                     alert('Ошибка при добавлении: ' + resp.status);
+                    throw new Error('Add failed');
                 }
+            }).then(product => {
+                // Добавляем новую карточку товара в DOM
+                addProductCardToDOM(product);
+                alert("Успешно добавлено");
+                addForm.reset();
+                document.getElementById('addModal').classList.remove('active');
             }).catch(err => {
                 console.error(err);
-                alert('Не удалось отправить данные');
+                if (err.message !== 'Add failed') {
+                    alert('Не удалось отправить данные');
+                }
             });
         });
     }
@@ -403,7 +538,7 @@
     document.addEventListener('click', async function (e) {
         if (!e.target.classList.contains('delete-btn')) return;
 
-        const id = e.target.getAttribute('data-id'); // здесь уже подставлен product.id
+        const id = e.target.getAttribute('data-id');
         if (!confirm('Точно удалить?')) return;
 
         const response = await fetch('/products/delete/' + id, {
@@ -411,7 +546,11 @@
         });
 
         if (response.ok) {
-            e.target.closest('tr')?.remove();
+            // Находим и удаляем карточку товара из DOM
+            const productCard = document.querySelector(`[data-product-id="${id}"]`);
+            if (productCard) {
+                productCard.remove();
+            }
             alert('Удалено');
         } else {
             alert('Ошибка удаления: ' + response.status);
