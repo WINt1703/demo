@@ -144,13 +144,11 @@ public class Product {
         this.photo = photo;
     }
 
-    public void addOrderProduct(OrderProduct op) {
-        this.orderProducts.add(op);
-        op.setProduct(this);
+    public Set<OrderProduct> getOrderProducts() {
+        return this.orderProducts;
     }
 
-    public void removeOrderProduct(OrderProduct op) {
-        this.orderProducts.remove(op);
-        op.setProduct(null);
+    public void setOrderProducts(Set<OrderProduct> orderProducts) {
+        this.orderProducts = orderProducts;
     }
 }
